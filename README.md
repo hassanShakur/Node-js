@@ -144,3 +144,48 @@ server.listen(8000, '127.0.0.1', () => {
   console.log('Listening...');
 });
 ```
+
+### Require under the hood
+
+On requiring a module, it's wrapped in a `IEFE` as below which is seen in logging `require('module').wrapper`.
+
+```js
+['(function (exports, require, module, __filename, __dirname) { ', '\n});'];
+```
+
+Exports can be done individually or as a group.
+
+#### Group
+
+```js
+class Calculator {
+  add(a, b) {
+    return a + b;
+  }
+  multiply(a, b) {
+    return a * b;
+  }
+}
+
+module.exports = Calculator;
+```
+
+Then imported and used as:
+
+```js
+const Calc = require('./Calculator');
+const calc1 = new Calc();
+calc1.add(1, 2);
+```
+
+#### Individual
+
+```js
+exports.subtract = (a, b) => a - b;
+exports.divide = (a, b) => a / b;
+```
+
+```js
+const { subtract, divide } = require('./02-multipleExports');
+divide(9, 3);
+```
