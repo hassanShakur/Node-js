@@ -1,4 +1,4 @@
-# Node-ing
+# Node
 
 ## Modules
 
@@ -68,5 +68,79 @@ const server = http.createServer((req, res) => {
     });
     res.end('<h3>Page not found pal!</h3>');
   }
+});
+```
+
+### Events, Listeners & Emmiters
+
+```js
+const EventEmmiter = require('events');
+
+class Project extends EventEmmiter {
+  constructor() {
+    super();
+  }
+}
+
+const myEmmiter = new Project();
+
+myEmmiter.on('newProject', () => {
+  console.log('Start of a new project');
+});
+
+// Several liteners can be set on the same event
+myEmmiter.on('newProject', (type) => {
+  console.log(`The project is on ${type}`);
+});
+
+// Other arguments after emmiter are parameters to the listeners
+myEmmiter.emit('newProject', 'Computer Science');
+```
+
+### Streams
+
+Is an efficient way of data transmision in which info is read in chunks and sent to client without waiting for the entire read process to end, save it to a variable then respond. It clears the memory whenever a `readable stream` is complete and sends it back as `data` event.
+
+```js
+const fs = require('fs');
+const server = require('http').createServer();
+
+server.on('request', (req, res) => {
+  const readable = fs.createReadStream('big-file.txt');
+
+  readable.on('data', (chunk) => {
+    res.write(chunk);
+  });
+
+  readable.on('end', () => {
+    res.end();
+  });
+
+  readable.on('error', (err) => {
+    console.log(err);
+    res.statusCode = 500;
+    res.end('File not found!');
+  });
+});
+
+server.listen(8000, '127.0.0.1', () => {
+  console.log('Listening...');
+});
+```
+
+Thou this works, `Backpressure` can occur as the readable stream is much faster than the writable and therefore overwhelms it. The solution is using the `pipe()` where, `readableSource.pipe(writableDestination)`, where it regulates how fast the process happens. Eg for the above:
+
+```js
+const fs = require('fs');
+const server = require('http').createServer();
+
+server.on('request', (req, res) => {
+  const readable = fs.createReadStream('test-file.txt');
+
+  readable.pipe(res);
+});
+
+server.listen(8000, '127.0.0.1', () => {
+  console.log('Listening...');
 });
 ```
