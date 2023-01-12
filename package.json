@@ -4,7 +4,7 @@
   "description": "Learning some nodes 😁",
   "main": "app.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "nodemon app.js"
   },
   "repository": {
     "type": "git",
@@ -15,5 +15,8 @@
   "bugs": {
     "url": "https://github.com/hassanShakur/Node-js/issues"
   },
-  "homepage": "https://github.com/hassanShakur/Node-js#readme"
+  "homepage": "https://github.com/hassanShakur/Node-js#readme",
+  "dependencies": {
+    "slugify": "^1.6.5"
+  }
 }
