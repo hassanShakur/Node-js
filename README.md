@@ -245,8 +245,33 @@ app.listen(3000, () => {
 });
 ```
 
+#### Middleware
+
 Middleware is a function can be used in `post` to modify incoming request data. It's created as:
 
 ```js
 app.use(express.json());
+```
+
+### Handling URL Parameters
+
+```js
+app.get('/api/v1/tours/:id', (req, res) => {
+  const id = req.params.id * 1;
+
+
+  const tour = tours.find((el) => el.id === id);
+
+  if (!tour) {
+    return res.status(404).json({
+      status: 'fail',
+      message: 'Invalid ID!',
+    });
+  }
+
+  res.status(200).json({
+    status: 'success',
+    data: { tour },
+  });
+});
 ```
