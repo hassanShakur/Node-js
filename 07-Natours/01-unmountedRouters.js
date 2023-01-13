@@ -4,8 +4,10 @@ const fs = require('fs');
 
 const app = express();
 
+// Morgan is a HTTP request logger
 app.use(morgan('dev'));
 
+// Middleware
 app.use(express.json());
 
 app.use((req, res, next) => {
@@ -46,6 +48,7 @@ const getTour = (req, res) => {
 };
 
 const createTour = (req, res) => {
+  //   console.log(req.body);
   const newId = tours[tours.length - 1].id + 1;
   const newTour = Object.assign({ id: newId }, req.body);
 
@@ -68,6 +71,8 @@ const createTour = (req, res) => {
 };
 
 const updateTour = (req, res) => {
+  // Search ID and update contents
+
   if (req.params.id * 1 >= tours.length) {
     return res.status(404).json({
       status: 'fail',
@@ -84,6 +89,8 @@ const updateTour = (req, res) => {
 };
 
 const deleteTour = (req, res) => {
+  // Search ID and update contents
+
   if (req.params.id * 1 >= tours.length) {
     return res.status(404).json({
       status: 'fail',
@@ -91,6 +98,7 @@ const deleteTour = (req, res) => {
     });
   }
 
+  // 204 No Content
   res.status(204).json({
     status: 'success',
     data: null,
@@ -132,27 +140,27 @@ const deleteUser = (req, res) => {
   });
 };
 
-const tourRouter = express.Router();
-const userRouter = express.Router();
+// app.get('/api/v1/tours', getAllTours);
+// app.get('/api/v1/tours/:id', getTour);
+// app.patch('/api/v1/tours/:id', updateTour);
+// app.delete('/api/v1/tours/:id', deleteTour);
+// app.post('/api/v1/tours', createTour);
 
-tourRouter.route('/').get(getAllTours).post(createTour);
+app.route('/api/v1/tours').get(getAllTours).post(createTour);
 
-tourRouter
-  .route('/:id')
+app
+  .route('/api/v1/tours/:id')
   .get(getTour)
   .patch(updateTour)
   .delete(deleteTour);
 
-userRouter.route('/').get(getAllUsers).post(createUser);
+app.route('/api/v1/users').get(getAllUsers).post(createUser);
 
-userRouter
-  .route('/:id')
+app
+  .route('/api/v1/users/:id')
   .get(getUser)
   .patch(updateUser)
   .delete(deleteUser);
-
-app.use('/api/v1/tours', tourRouter);
-app.use('/api/v1/users', userRouter);
 
 app.listen(3000, () => {
   console.log('App running on port 3000...');

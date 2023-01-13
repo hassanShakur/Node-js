@@ -10,7 +10,10 @@
 const fs = require('fs');
 
 // Readinng
-const textRead = fs.readFileSync('./path/to/file/to/read.txt', 'utf-8');
+const textRead = fs.readFileSync(
+  './path/to/file/to/read.txt',
+  'utf-8'
+);
 
 // Writing
 const textWrite = `Some read info...`;
@@ -150,7 +153,10 @@ server.listen(8000, '127.0.0.1', () => {
 On requiring a module, it's wrapped in a `IEFE` as below which is seen in logging `require('module').wrapper`.
 
 ```js
-['(function (exports, require, module, __filename, __dirname) { ', '\n});'];
+[
+  '(function (exports, require, module, __filename, __dirname) { ',
+  '\n});',
+];
 ```
 
 Exports can be done individually or as a group.
@@ -346,4 +352,22 @@ app.use((req, res, next) => {
   req.timeRequested = new Date().toISOString();
   next();
 });
+```
+
+### Router Mounting
+
+Mounting an `express router` on another in order to distribute workload.
+
+```js
+const tourRouter = express.Router();
+
+tourRouter.route('/').get(getAllTours).post(createTour);
+
+tourRouter
+  .route('/:id')
+  .get(getTour)
+  .patch(updateTour)
+  .delete(deleteTour);
+
+app.use('/api/v1/tours', tourRouter);
 ```
