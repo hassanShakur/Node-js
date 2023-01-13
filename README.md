@@ -371,3 +371,16 @@ tourRouter
 
 app.use('/api/v1/tours', tourRouter);
 ```
+
+### Param Middleware
+
+Middleware that runs only for a particular parameter specified in request url. Eg for `id` parameter:
+
+```js
+router.param('id', (req, res, next, val) => {
+  console.log(`ID is ${val}`);
+  next();
+});
+```
+It has the 4th argument which holds the value of the param.
+Can be used to validate the id for every router that needs it.

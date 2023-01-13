@@ -6,6 +6,13 @@ const { getAllTours, createTour, getTour, updateTour, deleteTour } =
 
 const router = express.Router();
 
+// router.param('id', (req, res, next, val) => {
+//   console.log(`ID is ${val}`);
+//   next();
+// });
+
+router.param('id', tourControllers.checkID);
+
 router.route('/').get(getAllTours).post(createTour);
 
 router
