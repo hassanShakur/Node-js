@@ -433,3 +433,49 @@ app.use(express.static(`${__dirname}/public`));
 ```
 
 To access: `127.0.0.1:<portNum>/fileName.txt, html...` if `fileName` is a file in `public` folder.
+
+## Environment Variables
+
+These are outside of `express` and are created by node. To view the env var by express:
+
+```js
+console.log(app.get('env')); // Returns 'environment
+console.log(process.env);
+```
+
+Variables created by node can be seen through:
+
+```js
+console.log(process.env);
+```
+
+`env vars` are configured in the `config.env` file and injected in nodes env vars using `dotenv` package.
+
+- In `config.env`
+
+```js
+NODE_ENV = development;
+PORT = 3000;
+```
+
+- In `server.js` before requiring `app.js` in order to have access
+
+```js
+const dotenv = require('dotenv');
+dotenv.config({ path: './config.env' });
+```
+
+Depending on set envs, different codes can be run at different places eg in the `package.json`s scripts, 2 npm starts can be set for either in `production` or `development`.
+
+```js
+"start:dev": "nodemon server.js",
+"start:prod": "NODE_ENV=production nodemon server.js"
+```
+
+And back in `app.js`:
+
+```js
+if (process.env.NODE_ENV === 'development') {
+  app.use(morgan('dev'));
+}
+```
