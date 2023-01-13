@@ -196,6 +196,8 @@ Build on top of Node.
 
 ### Simple `GET` and `POST`
 
+#### 1. Create
+
 ```js
 const express = require('express');
 const fs = require('fs');
@@ -253,12 +255,13 @@ Middleware is a function can be used in `post` to modify incoming request data. 
 app.use(express.json());
 ```
 
-### Handling URL Parameters
+### Handling URL Parameters (CRUD)
+
+#### 2. Read
 
 ```js
 app.get('/api/v1/tours/:id', (req, res) => {
   const id = req.params.id * 1;
-
 
   const tour = tours.find((el) => el.id === id);
 
@@ -272,6 +275,28 @@ app.get('/api/v1/tours/:id', (req, res) => {
   res.status(200).json({
     status: 'success',
     data: { tour },
+  });
+});
+```
+
+#### 3. Update
+
+```js
+app.patch('/api/v1/tours/:id', (req, res) => {
+  // Search ID and update contents
+
+  if (req.params.id * 1 >= tours.length) {
+    return res.status(404).json({
+      status: 'fail',
+      message: 'Invalid ID!',
+    });
+  }
+
+  res.status(200).json({
+    status: 'success',
+    data: {
+      tour: '<Updated tour>',
+    },
   });
 });
 ```
