@@ -300,3 +300,17 @@ app.patch('/api/v1/tours/:id', (req, res) => {
   });
 });
 ```
+
+#### 4. Delete
+
+```js
+app.delete('/api/v1/tours/:id', (req, res) => {
+  // Search ID and update contents
+
+  // 204 No Content
+  res.status(204).json({
+    status: 'success',
+    data: null,
+  });
+});
+```
