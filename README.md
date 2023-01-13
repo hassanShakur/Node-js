@@ -326,3 +326,15 @@ app
   .patch(updateTour)
   .delete(deleteTour);
 ```
+
+### More on Middleware
+
+They are like subfunctions in express. Almost everything is a middleware including the routing and data transfer that all make up the `request-response cycle`. Every middleware has access to a `next()` function which must be called unless it is a final middleware which sends data back `res.send`. If not called, the middlewares coming after it wont be run. If a `.send()` is called before other middlewares of the same or non-specified paths, then thats where middleware execution stops.
+Middlewares without specific paths are run for every code execution.
+
+```js
+app.use((req, res, next) => {
+  console.log('Middleware called 👋');
+  next();
+});
+```

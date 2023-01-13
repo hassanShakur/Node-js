@@ -6,6 +6,11 @@ const app = express();
 // Middleware
 app.use(express.json());
 
+app.use((req, res, next) => {
+  console.log('Middleware called 👋');
+  next();
+});
+
 const tours = JSON.parse(
   fs.readFileSync(`${__dirname}/dev-data/data/tours-simple.json`)
 );
