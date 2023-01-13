@@ -13,7 +13,10 @@ const router = express.Router();
 
 router.param('id', tourControllers.checkID);
 
-router.route('/').get(getAllTours).post(createTour);
+router
+  .route('/')
+  .get(getAllTours)
+  .post(tourControllers.checkBody, createTour);
 
 router
   .route('/:id')

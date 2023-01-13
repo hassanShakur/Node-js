@@ -37,6 +37,19 @@ exports.getTour = (req, res) => {
   });
 };
 
+exports.checkBody = (req, res, next) => {
+  const tourBody = req.body;
+  const { id, price } = tourBody;
+
+  if (!id || !price) {
+    return res.status(400).json({
+      status: 'fail',
+      message: 'Tour price and ID are required!!',
+    });
+  }
+  next();
+};
+
 exports.createTour = (req, res) => {
   const newId = tours[tours.length - 1].id + 1;
   const newTour = Object.assign({ id: newId }, req.body);

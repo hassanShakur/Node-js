@@ -382,5 +382,44 @@ router.param('id', (req, res, next, val) => {
   next();
 });
 ```
+
 It has the 4th argument which holds the value of the param.
 Can be used to validate the id for every router that needs it.
+
+```js
+exports.checkID = (req, res, next, val) => {
+  console.log(`ID is ${val}`);
+
+  if (req.params.id * 1 >= tours.length) {
+    return res.status(404).json({
+      status: 'fail',
+      message: 'Invalid ID!',
+    });
+  }
+```
+
+### Chaining Multiple Middleware Functions
+
+```js
+router
+  .route('/')
+  .get(getAllTours)
+  .post(tourControllers.checkBody, createTour);
+```
+
+The `tourControllers.checkBody` is an extra middleware checking if the `createTour` request body has all necessary parameters before it being created.
+
+```js
+exports.checkBody = (req, res, next) => {
+  const tourBody = req.body;
+  const { id, price } = tourBody;
+
+  if (!id || !price) {
+    return res.status(400).json({
+      status: 'fail',
+      message: 'Tour price and ID are required!!',
+    });
+  }
+  next();
+};
+```
