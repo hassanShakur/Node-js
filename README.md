@@ -423,3 +423,13 @@ exports.checkBody = (req, res, next) => {
   next();
 };
 ```
+
+### Serving Static Files
+
+Are files that can't be accessed from the url. `express.static` middleware is used to provide the dir with the static files which will then act as root. So to access any file inside the dir, go to localhost then the path to file without including the parent dir.
+
+```js
+app.use(express.static(`${__dirname}/public`));
+```
+
+To access: `127.0.0.1:<portNum>/fileName.txt, html...` if `fileName` is a file in `public` folder.

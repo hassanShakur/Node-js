@@ -6,9 +6,10 @@ const app = express();
 const userRouter = require('./routers/userRouters');
 const tourRouter = require('./routers/tourRouters');
 
+// Middlewares
 app.use(morgan('dev'));
-
 app.use(express.json());
+app.use(express.static(`${__dirname}/public`))
 
 app.use((req, res, next) => {
   console.log('Middleware called 👋');
