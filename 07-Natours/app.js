@@ -1,13 +1,18 @@
 const express = require('express');
+const morgan = require('morgan');
 const fs = require('fs');
 
 const app = express();
+
+// Morgan is a HTTP request logger
+app.use(morgan('dev'));
 
 // Middleware
 app.use(express.json());
 
 app.use((req, res, next) => {
   console.log('Middleware called 👋');
+  req.timeRequested = new Date().toISOString();
   next();
 });
 
@@ -27,6 +32,7 @@ const getTour = (req, res) => {
   const id = req.params.id * 1;
 
   const tour = tours.find((el) => el.id === id);
+  console.log(tour);
 
   if (!tour) {
     return res.status(404).json({
@@ -109,7 +115,7 @@ app.route('/api/v1/tours').get(getAllTours).post(createTour);
 
 app
   .route('/api/v1/tours/:id')
-  .post(createTour)
+  .get(getTour)
   .patch(updateTour)
   .delete(deleteTour);
 

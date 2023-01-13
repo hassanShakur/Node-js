@@ -322,7 +322,7 @@ app.route('/api/v1/tours').get(getAllTours).post(createTour);
 
 app
   .route('/api/v1/tours/:id')
-  .post(createTour)
+  .get(getTour)
   .patch(updateTour)
   .delete(deleteTour);
 ```
@@ -335,6 +335,15 @@ Middlewares without specific paths are run for every code execution.
 ```js
 app.use((req, res, next) => {
   console.log('Middleware called 👋');
+  next();
+});
+```
+
+It can also me used to add properties to the request to use later, eg adding time like:
+
+```js
+app.use((req, res, next) => {
+  req.timeRequested = new Date().toISOString();
   next();
 });
 ```
