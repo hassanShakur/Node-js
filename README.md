@@ -312,3 +312,17 @@ app.delete('/api/v1/tours/:id', (req, res) => {
   });
 });
 ```
+
+### Code Refactoring
+
+The above could be separated into functions and further combine related paths using `app.route`
+
+```js
+app.route('/api/v1/tours').get(getAllTours).post(createTour);
+
+app
+  .route('/api/v1/tours/:id')
+  .post(createTour)
+  .patch(updateTour)
+  .delete(deleteTour);
+```
