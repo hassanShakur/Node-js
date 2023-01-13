@@ -194,7 +194,7 @@ divide(9, 3);
 
 Build on top of Node.
 
-### Simple `GET` and `POST`
+### Handling URL Parameters (CRUD)
 
 #### 1. Create
 
@@ -247,15 +247,13 @@ app.listen(3000, () => {
 });
 ```
 
-#### Middleware
+##### Middleware
 
 Middleware is a function can be used in `post` to modify incoming request data. It's created as:
 
 ```js
 app.use(express.json());
 ```
-
-### Handling URL Parameters (CRUD)
 
 #### 2. Read
 
