@@ -1,4 +1,6 @@
+// eslint-disable-next-line prettier/prettier
 const express = require('express');
+// eslint-disable-next-line import/no-extraneous-dependencies
 const morgan = require('morgan');
 
 const app = express();
@@ -15,7 +17,7 @@ app.use(express.json());
 app.use(express.static(`${__dirname}/public`));
 
 app.use((req, res, next) => {
-  console.log('Middleware called');
+  // console.log('Middleware called');
   req.timeRequested = new Date().toISOString();
   next();
 });
