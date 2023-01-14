@@ -601,3 +601,21 @@ const tourSchema = mongoose.Schema({
 
 const Tour = mongoose.model('Tour', tourSchema);
 ```
+
+### Creating Documents from Models
+
+The docs are created as insatnces of models. The `new Tour()` returns a promise that resolves with the document if no errors are encountered.
+
+```js
+const testTour = new Tour({
+  name: 'The Park Camper',
+  price: 997,
+});
+
+testTour
+  .save()
+  .then((doc) => {
+    console.log(doc);
+  })
+  .catch((err) => console.log('Error 💥💥', err));
+```
