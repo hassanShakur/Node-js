@@ -561,3 +561,43 @@ To delete all, search query is left empty:
 ```js
 db.docName.deleteMany({});
 ```
+
+## Mongoose
+
+### Connection
+
+```js
+mongoose
+  .connect(process.env.ENCODED_DATABASE_PASSWORD, {
+    useNewUrlParser: true,
+  })
+  .then((con) => {
+    // console.log(con.connection.name); DB name
+    console.log('DB connection successful...');
+  });
+```
+
+### Schemas and Models
+
+A schema is a baseline for describing a model. It contains the properties and data types with other specifications. A model is like a blueprint made out of schema objects used in creation of a database.
+
+```js
+const tourSchema = mongoose.Schema({
+  name: {
+    type: String,
+    required: [true, 'A tour needs a name'],
+    unique: true,
+  },
+  rating: {
+    type: Number,
+    default: 4.5,
+  },
+  price: {
+    type: Number,
+    required: [true, 'A tour needs a price'],
+  },
+  difficulty: String,
+});
+
+const Tour = mongoose.model('Tour', tourSchema);
+```
