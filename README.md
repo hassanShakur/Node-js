@@ -482,6 +482,8 @@ if (process.env.NODE_ENV === 'development') {
 
 ## MongoDB
 
+### Mongo Create
+
 - Create db
   ```js
   use dbName
@@ -490,6 +492,9 @@ if (process.env.NODE_ENV === 'development') {
   ```js
   db.docName.insertMany({}, {});
   ```
+
+### Mongo Read
+
 - See all dbs or collections
   ```js
   show dbs
@@ -514,9 +519,45 @@ if (process.env.NODE_ENV === 'development') {
   });
   ```
 - Object projection - Selecting specific fields from the output. Eg to get only the names:
+
   ```js
   db.docName.find(
     { price: { $lte: 300 }, age: { $gt: 20 } },
     { name: 1 }
   );
   ```
+
+  ![Alt text](07-Natours/public/img/mongo-1.png)
+
+### Mongo Updating
+
+You can use `updateOne` or `updateMany` as needed, and use `$set` var for setting.
+
+```js
+db.docName.updateOne(
+  { name: 'Some Namme' },
+  { $set: { age: 'Age to set' } }
+);
+```
+
+![Alt text](07-Natours/public/img/mongo-2.png)
+
+Replacing a collection is similar to update. Pass in the search criteria and its done.
+
+```js
+db.docName.replaceOne({<SearchQuery>}, {<NewData>});
+```
+
+### Mongo Deleting
+
+Use `deleteOne` or `deleteMany` together with search query.
+
+```js
+db.docName.deleteOne({<SearchQuery>});
+```
+
+To delete all, search query is left empty:
+
+```js
+db.docName.deleteMany({});
+```
