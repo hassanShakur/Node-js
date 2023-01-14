@@ -479,3 +479,44 @@ if (process.env.NODE_ENV === 'development') {
   app.use(morgan('dev'));
 }
 ```
+
+## MongoDB
+
+- Create db
+  ```js
+  use dbName
+  ```
+- Create collections within a `document`. The objects are input like in `JSON` but will be stored as `BSON`.
+  ```js
+  db.docName.insertMany({}, {});
+  ```
+- See all dbs or collections
+  ```js
+  show dbs
+  db.docName.find()
+  ```
+- Search for specific collection
+  ```js
+  db.docName.find({property<SearchParam>: "value"})
+  ```
+- Query for specific range in collection
+  ```js
+  db.docName.find({ price: { $lte: 300 } }); // Will return all prices <=300
+  ```
+- And query
+  ```js
+  db.docName.find({ price: { $lte: 300 }, age: { $gt: 20 } });
+  ```
+- Or query
+  ```js
+  db.docName.find({
+    $or: [{ price: { $lte: 300 } }, { age: { $gt: 20 } }],
+  });
+  ```
+- Object projection - Selecting specific fields from the output. Eg to get only the names:
+  ```js
+  db.docName.find(
+    { price: { $lte: 300 }, age: { $gt: 20 } },
+    { name: 1 }
+  );
+  ```
