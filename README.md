@@ -602,7 +602,8 @@ const tourSchema = mongoose.Schema({
 const Tour = mongoose.model('Tour', tourSchema);
 ```
 
-### Creating Documents from Models
+### Mongoose Crud Documents From Models
+#### 1. Creating Documents
 
 The docs are created as insatnces of models. The `new Tour()` returns a promise that resolves with the document if no errors are encountered.
 
@@ -619,3 +620,27 @@ testTour
   })
   .catch((err) => console.log('Error 💥💥', err));
 ```
+
+##### Alternate Doc Creation
+
+```js
+exports.createTour = async (req, res) => {
+  try {
+    const newTour = await Tour.create(req.body);
+
+    res.status(201).json({
+      status: 'success',
+      data: {
+        tour: newTour,
+      },
+    });
+  } catch (err) {
+    res.status(400).json({
+      status: 'fail',
+      message: err,
+    });
+  }
+};
+```
+
+#### 2. Reading Documents
