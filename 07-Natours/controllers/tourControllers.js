@@ -8,7 +8,14 @@ exports.getAllTours = async (req, res) => {
     excludedQueries.forEach((qr) => delete queryObj[qr]);
     console.log(queryObj);
     // console.log(req.query);
-    const tours = await Tour.find(queryObj);
+    
+    // Advanced querying
+    let queryStr = JSON.stringify(queryObj);
+    queryStr = queryStr.replace(/\b(gt|lt|gte|lte)\b/g, (match) => `$${match}`);
+    console.log(JSON.parse(queryStr));
+
+    const query = Tour.find(JSON.parse(queryStr));
+    const tours = await query;
 
     // const tours = await Tour.find()
     //   .where('duration')

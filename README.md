@@ -42,6 +42,7 @@
       - [2. Updating Documents](#2-updating-documents)
       - [2. Deleting Documents](#2-deleting-documents)
     - [Simple Querying Functionality](#simple-querying-functionality)
+    - [Advanced Filtering](#advanced-filtering)
 
 ## Modules
 
@@ -734,3 +735,27 @@ const tours = await Tour.find()
   .where('difficulty')
   .equals('easy');
 ```
+
+### Advanced Filtering
+
+Sample query url:
+
+```js
+127.0.0.1:3000/api/v1/tours/?difficulty=easy&duration[gte]=5&page=1&duration[lt]=9
+```
+
+Parameters such as `greater than` and the likes are put in square brackets. But upon calling the `req.query`, they miss the `$` as it is to be in `mongoDB` queries. So the addition is done manually as:
+
+```js
+let queryStr = JSON.stringify(queryObj);
+queryStr = queryStr.replace(
+  /\b(gt|lt|gte|lte)\b/g,
+  (match) => `$${match}`
+);
+console.log(JSON.parse(queryStr));
+
+const query = Tour.find(JSON.parse(queryStr));
+const tours = await query;
+```
+
+Plus the await is done on the complete query after manipulation.
