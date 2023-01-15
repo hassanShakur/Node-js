@@ -1,5 +1,48 @@
 # Node
 
+- [Node](#node)
+  - [Modules](#modules)
+    - [Files](#files)
+      - [Asynchronous](#asynchronous)
+      - [Synchronous Non-Blocking](#synchronous-non-blocking)
+    - [Http Server](#http-server)
+      - [Simple Web Server](#simple-web-server)
+      - [Routing](#routing)
+    - [Events, Listeners \& Emmiters](#events-listeners--emmiters)
+    - [Streams](#streams)
+    - [Require under the hood](#require-under-the-hood)
+      - [Group](#group)
+      - [Individual](#individual)
+  - [Express](#express)
+    - [Handling URL Parameters (CRUD)](#handling-url-parameters-crud)
+      - [1. Create](#1-create)
+        - [Middleware](#middleware)
+      - [2. Read](#2-read)
+      - [3. Update](#3-update)
+      - [4. Delete](#4-delete)
+    - [Code Refactoring](#code-refactoring)
+    - [More on Middleware](#more-on-middleware)
+    - [Router Mounting](#router-mounting)
+    - [Param Middleware](#param-middleware)
+    - [Chaining Multiple Middleware Functions](#chaining-multiple-middleware-functions)
+    - [Serving Static Files](#serving-static-files)
+  - [Environment Variables](#environment-variables)
+  - [MongoDB](#mongodb)
+    - [Mongo Create](#mongo-create)
+    - [Mongo Read](#mongo-read)
+    - [Mongo Updating](#mongo-updating)
+    - [Mongo Deleting](#mongo-deleting)
+  - [Mongoose](#mongoose)
+    - [Connection](#connection)
+    - [Schemas and Models](#schemas-and-models)
+    - [Mongoose Crud Documents From Models](#mongoose-crud-documents-from-models)
+      - [1. Creating Documents](#1-creating-documents)
+        - [Alternate Doc Creation](#alternate-doc-creation)
+      - [2. Reading Documents](#2-reading-documents)
+      - [2. Updating Documents](#2-updating-documents)
+      - [2. Deleting Documents](#2-deleting-documents)
+    - [Simple Querying Functionality](#simple-querying-functionality)
+
 ## Modules
 
 ### Files
@@ -667,4 +710,27 @@ const tour = await Tour.findByIdAndUpdate(req.params.id, req.body, {
 
 ```js
 const tour = await Tour.findOneAndDelete(req.params.id);
+```
+
+### Simple Querying Functionality
+
+To query a parameter sent through the url:
+
+```js
+const tours = await Tour.find(req.query);
+```
+
+```js
+const tours = await Tour.find({
+  key: value,
+  key2: val2,
+});
+```
+
+```js
+const tours = await Tour.find()
+  .where('duration')
+  .gte(5)
+  .where('difficulty')
+  .equals('easy');
 ```
