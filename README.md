@@ -44,6 +44,7 @@
     - [Simple Querying Functionality](#simple-querying-functionality)
     - [Advanced Filtering](#advanced-filtering)
     - [Sorting](#sorting)
+    - [Prijection (Field Limiting)](#prijection-field-limiting)
 
 ## Modules
 
@@ -776,5 +777,36 @@ if (req.query.sort) {
   const sortBy = req.query.sort.split(',').join(' ');
   console.log(sortBy);
   query = query.sort(sortBy); // sort(param1, param2) === sort(param1 param2)
+}
+```
+
+A negative before the param makes it sorted in desc.
+
+### Prijection (Field Limiting)
+
+Sample url
+
+```js
+127.0.0.1:3000/api/v1/tours/?fields=name,price,duration,difficulty
+```
+
+A negative before excludes it from the selection.
+
+```js
+if (req.query.fields) {
+  const fields = req.query.fields.split(',').join(' ');
+  query = query.select(fields);
+} else {
+  query = query.select('-__v');
+}
+```
+
+Sensitive info can be excluded from the schema by setting `select` to `false`.
+
+```js
+createdAt: {
+  type: Date,
+  default: Date.now(),
+  select: false,
 }
 ```

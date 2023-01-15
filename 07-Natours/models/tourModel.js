@@ -47,6 +47,7 @@ const tourSchema = mongoose.Schema({
   createdAt: {
     type: Date,
     default: Date.now(),
+    select: false,
   },
   priceDiscount: Number,
   images: [String],

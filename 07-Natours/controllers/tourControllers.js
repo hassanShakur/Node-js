@@ -6,7 +6,6 @@ exports.getAllTours = async (req, res) => {
     const excludedQueries = ['page', 'limit', 'fields'];
 
     excludedQueries.forEach((qr) => delete queryObj[qr]);
-    console.log(queryObj);
     // console.log(req.query);
 
     // Advanced querying
@@ -19,8 +18,16 @@ exports.getAllTours = async (req, res) => {
     // Sorting
     if (req.query.sort) {
       const sortBy = req.query.sort.split(',').join(' ');
-      console.log(sortBy);
       query = query.sort(sortBy); // sort(param1, param2) === sort(param1 param2)
+    }
+
+    // Projection
+    if (req.query.fields) {
+      const fields = req.query.fields.split(',').join(' ');
+      console.log(fields);
+      query = query.select(fields);
+    } else {
+      query = query.select('-__v');
     }
 
     const tours = await query;
