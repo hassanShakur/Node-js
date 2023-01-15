@@ -44,7 +44,8 @@
     - [Simple Querying Functionality](#simple-querying-functionality)
     - [Advanced Filtering](#advanced-filtering)
     - [Sorting](#sorting)
-    - [Prijection (Field Limiting)](#prijection-field-limiting)
+    - [Projection (Field Limiting)](#projection-field-limiting)
+    - [Pagination](#pagination)
 
 ## Modules
 
@@ -782,7 +783,7 @@ if (req.query.sort) {
 
 A negative before the param makes it sorted in desc.
 
-### Prijection (Field Limiting)
+### Projection (Field Limiting)
 
 Sample url
 
@@ -808,5 +809,23 @@ createdAt: {
   type: Date,
   default: Date.now(),
   select: false,
+}
+```
+
+### Pagination
+
+Specified using `skip()` and `limit()`.
+
+```js
+const limit = req.query.limit || 100;
+const page = req.query.page || 1;
+const skip = (page - 1) * limit;
+
+query = query.skip(skip).limit(limit);
+
+if (req.query.page) {
+  const totalTours = await Tour.countDocuments();
+  if (limit * page > totalTours)
+    throw new Error("Page doesn't exist!!!");
 }
 ```
