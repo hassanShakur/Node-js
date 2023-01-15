@@ -7,17 +7,28 @@ dotenv.config({ path: './config.env' });
 
 const app = require('./app');
 
-const DB = process.env.DATABASE.replace(
-  '<PASSWORD>',
-  process.env.ENCODED_DATABASE_PASSWORD
-);
+// const DB = process.env.DATABASE.replace(
+//   '<PASSWORD>',
+//   process.env.ENCODED_DATABASE_PASSWORD
+// );
+
+// mongoose
+//   .connect(DB, {
+//     useNewUrlParser: true,
+//   })
+//   .then((con) => {
+//     console.log(con.connection.name);
+//     console.log('DB connection successful...');
+//   });
+
+const DB = process.env.DATABASE_LOCAL;
 
 mongoose
   .connect(DB, {
-    useNewUrlParser: true,
+    // useNewUrlParser: true,
   })
   .then((con) => {
-    console.log(con.connection.name);
+    // console.log(con.connection.name);
     console.log('DB connection successful...');
   });
 

@@ -603,6 +603,7 @@ const Tour = mongoose.model('Tour', tourSchema);
 ```
 
 ### Mongoose Crud Documents From Models
+
 #### 1. Creating Documents
 
 The docs are created as insatnces of models. The `new Tour()` returns a promise that resolves with the document if no errors are encountered.
@@ -644,3 +645,20 @@ exports.createTour = async (req, res) => {
 ```
 
 #### 2. Reading Documents
+
+Only the query changes:
+
+```js
+const tour = await Tour.findById(req.params.id);
+```
+
+#### 2. Updating Documents
+
+Several methods can be used including `findIdAndUpdate` which takes the ID to search for, the body to update to and options eg `new` returns a new tour after the update, `runValidators` will run the update through the described validations in the `schema`.
+
+```js
+const tour = await Tour.findByIdAndUpdate(req.params.id, req.body, {
+  new: true,
+  runValidators: true,
+});
+```
