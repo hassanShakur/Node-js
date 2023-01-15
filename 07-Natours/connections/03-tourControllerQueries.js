@@ -1,12 +1,5 @@
 const Tour = require('./../models/tourModel');
 
-exports.bestAndCheap = (req, res, next) => {
-  req.query.limit = '5';
-  req.query.sort = '-ratingsAverage,price';
-  req.query.fields = 'name,difficulty,price,ratingsAverage,summary';
-  next();
-};
-
 exports.getAllTours = async (req, res) => {
   try {
     const queryObj = { ...req.query };
@@ -51,6 +44,12 @@ exports.getAllTours = async (req, res) => {
 
     // Execute query
     const tours = await query;
+
+    // const tours = await Tour.find()
+    //   .where('duration')
+    //   .gte(5)
+    //   .where('difficulty')
+    //   .equals('easy');
 
     res.status(200).json({
       status: 'success',

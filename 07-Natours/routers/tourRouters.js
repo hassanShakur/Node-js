@@ -13,6 +13,8 @@ const router = express.Router();
 
 // router.param('id', tourControllers.checkID);
 
+router.route('/best-and-cheap').get(tourControllers.bestAndCheap, getAllTours);
+
 router
   .route('/')
   .get(getAllTours)
