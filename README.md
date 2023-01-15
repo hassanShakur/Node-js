@@ -662,3 +662,9 @@ const tour = await Tour.findByIdAndUpdate(req.params.id, req.body, {
   runValidators: true,
 });
 ```
+
+#### 2. Deleting Documents
+
+```js
+const tour = await Tour.findOneAndDelete(req.params.id);
+```
