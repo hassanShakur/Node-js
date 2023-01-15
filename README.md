@@ -43,6 +43,7 @@
       - [2. Deleting Documents](#2-deleting-documents)
     - [Simple Querying Functionality](#simple-querying-functionality)
     - [Advanced Filtering](#advanced-filtering)
+    - [Sorting](#sorting)
 
 ## Modules
 
@@ -754,8 +755,26 @@ queryStr = queryStr.replace(
 );
 console.log(JSON.parse(queryStr));
 
-const query = Tour.find(JSON.parse(queryStr));
+let query = Tour.find(JSON.parse(queryStr));
 const tours = await query;
 ```
 
 Plus the await is done on the complete query after manipulation.
+
+### Sorting
+
+Url with such formatting:
+
+```js
+127.0.0.1:3000/api/v1/tours/?sort=-price,ratingsAverage
+```
+
+The sorting is done first on prices then ratings. Since the query func expects them space separated, split them up based on comma then rejoin with space to pass them in as parameters.
+
+```js
+if (req.query.sort) {
+  const sortBy = req.query.sort.split(',').join(' ');
+  console.log(sortBy);
+  query = query.sort(sortBy); // sort(param1, param2) === sort(param1 param2)
+}
+```
