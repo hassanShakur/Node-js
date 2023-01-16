@@ -50,6 +50,7 @@
       - [Routing](#routing-1)
       - [Implementation](#implementation)
       - [Unwinding \& Projecting](#unwinding--projecting)
+    - [Virtual Properties](#virtual-properties)
 
 ## Modules
 
@@ -941,4 +942,47 @@ exports.getMonthlyPlan = async (req, res) => {
     });
   }
 };
+```
+
+### Virtual Properties
+
+Are calculated properties and thus not stored in the database. They also can't be used in queries. In order to be displayed, a second parameter is passed to the parent schema.
+
+```js
+const mongoose = require('mongoose');
+
+const tourSchema = mongoose.Schema(
+  {
+    name: {
+      type: String,
+      required: [true, 'A tour needs a name'],
+      unique: true,
+      trim: true,
+    },
+    duration: {
+      type: Number,
+      required: [true, 'A tour needs a duration'],
+    },
+    price: {
+      type: Number,
+      required: [true, 'A tour needs a price'],
+    },
+    difficulty: {
+      type: String,
+      required: [true, 'A tour needs a difficulty'],
+    },
+    description: {
+      type: String,
+      trim: true,
+    },
+  },
+  {
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true },
+  }
+);
+
+tourSchema.virtual('durationWeeks').get(function () {
+  return this.duration / 7;
+});
 ```
