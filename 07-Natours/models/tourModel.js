@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const slugify = require('slugify');
 
 const tourSchema = mongoose.Schema(
   {
@@ -50,6 +51,7 @@ const tourSchema = mongoose.Schema(
       default: Date.now(),
       select: false,
     },
+    slug: String,
     priceDiscount: Number,
     images: [String],
     startDates: [Date],
@@ -62,6 +64,18 @@ const tourSchema = mongoose.Schema(
 
 tourSchema.virtual('durationWeeks').get(function () {
   return this.duration / 7;
+});
+
+// Middleware executed between create and save
+tourSchema.pre('save', function (next) {
+  // console.log(this);
+  this.slug = slugify(this.name, { lower: true });
+  next();
+});
+
+tourSchema.post('save', function (doc, next) {
+  console.log(doc);
+  next();
 });
 
 const Tour = mongoose.model('Tour', tourSchema);

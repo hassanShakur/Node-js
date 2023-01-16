@@ -51,6 +51,8 @@
       - [Implementation](#implementation)
       - [Unwinding \& Projecting](#unwinding--projecting)
     - [Virtual Properties](#virtual-properties)
+    - [Mongoose Middlewares (pre \& post hooks)](#mongoose-middlewares-pre--post-hooks)
+      - [Document Middleware](#document-middleware)
 
 ## Modules
 
@@ -984,5 +986,32 @@ const tourSchema = mongoose.Schema(
 
 tourSchema.virtual('durationWeeks').get(function () {
   return this.duration / 7;
+});
+```
+
+### Mongoose Middlewares (pre & post hooks)
+
+They can be used to run a fuctionality between 2 events eg before saving a doc and after. They are defined on the schema & are 4 types:
+
+1. Document
+2. Query
+3. Aggregate
+4. Model
+
+#### Document Middleware
+
+Can act on currently processed middleware. The `pre` has access to `this` which points to the current document being worked on. They all have `next()` same as any other middleware.
+
+```js
+// Middleware executed between .create() and .save()
+tourSchema.pre('save', function (next) {
+  // console.log(this);
+  this.slug = slugify(this.name, { lower: true });
+  next();
+});
+
+tourSchema.post('save', function (doc, next) {
+  console.log(doc);
+  next();
 });
 ```
