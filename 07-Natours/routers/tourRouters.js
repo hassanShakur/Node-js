@@ -13,17 +13,12 @@ const router = express.Router();
 
 // router.param('id', tourControllers.checkID);
 
+router.route('/tour-stats').get(tourControllers.tourStats, getAllTours);
+
 router.route('/best-and-cheap').get(tourControllers.bestAndCheap, getAllTours);
 
-router
-  .route('/')
-  .get(getAllTours)
-  .post(createTour);
+router.route('/').get(getAllTours).post(createTour);
 
-router
-  .route('/:id')
-  .get(getTour)
-  .patch(updateTour)
-  .delete(deleteTour);
+router.route('/:id').get(getTour).patch(updateTour).delete(deleteTour);
 
 module.exports = router;
