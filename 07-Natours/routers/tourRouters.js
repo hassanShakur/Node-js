@@ -13,7 +13,11 @@ const router = express.Router();
 
 // router.param('id', tourControllers.checkID);
 
-router.route('/tour-stats').get(tourControllers.tourStats, getAllTours);
+router
+  .route('/monthly-plan/:year')
+  .get(tourControllers.getMonthlyPlan, getAllTours);
+
+router.route('/tour-stats').get(tourControllers.getTourStats, getAllTours);
 
 router.route('/best-and-cheap').get(tourControllers.bestAndCheap, getAllTours);
 

@@ -51,7 +51,7 @@ const tourSchema = mongoose.Schema({
   },
   priceDiscount: Number,
   images: [String],
-  startDated: [Date],
+  startDates: [Date],
 });
 
 const Tour = mongoose.model('Tour', tourSchema);

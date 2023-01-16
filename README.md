@@ -49,6 +49,7 @@
     - [Aggregation Pipelining - Matching \& Grouping](#aggregation-pipelining---matching--grouping)
       - [Routing](#routing-1)
       - [Implementation](#implementation)
+      - [Unwinding \& Projecting](#unwinding--projecting)
 
 ## Modules
 
@@ -870,6 +871,67 @@ exports.tourStats = async (req, res) => {
       status: 'success',
       data: {
         stats,
+      },
+    });
+  } catch (err) {
+    res.status(400).json({
+      status: 'fail',
+      message: err,
+    });
+  }
+};
+```
+
+#### Unwinding & Projecting
+
+`Unwinding` involves breaking a document into different separate documents each with one value of a property that was an array of the original one document. Eg
+
+```js
+exports.getMonthlyPlan = async (req, res) => {
+  try {
+    const year = req.params.year * 1;
+    const plan = await Tour.aggregate([
+      { $unwind: '$startDates' },
+      {
+        $match: {
+          startDates: {
+            $gte: new Date(`${year}-01-01`),
+            $lte: new Date(`${year}-12-31`),
+          },
+        },
+      },
+      {
+        $group: {
+          _id: { $month: '$startDates' },
+          numOfTours: { $sum: 1 },
+          tours: { $push: '$name' },
+          avgRating: { $avg: '$ratingsAverage' },
+        },
+      },
+      {
+        $addFields: {
+          month: '$_id',
+        },
+      },
+      {
+        $project: {
+          _id: 0,
+        },
+      },
+      {
+        $sort: {
+          numOfTours: -1,
+        },
+      },
+      {
+        $limit: 12,
+      },
+    ]);
+
+    res.status(200).json({
+      status: 'success',
+      data: {
+        plan,
       },
     });
   } catch (err) {
