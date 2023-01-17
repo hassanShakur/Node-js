@@ -55,6 +55,8 @@
       - [Document Middleware](#document-middleware)
       - [Query Middleware](#query-middleware)
       - [Aggregation Middleware](#aggregation-middleware)
+    - [Data Validation](#data-validation)
+    - [Custom Validators](#custom-validators)
 
 ## Modules
 
@@ -1005,7 +1007,7 @@ They can be used to run a fuctionality between 2 events eg before saving a doc a
 Can act on currently processed middleware. They include `save`, `delete`, `remove` and such doc manipulators. The `pre` has access to `this` which points to the current document being worked on. They all have `next()` same as any other middleware.
 
 ```js
-// Middleware executed between .create() and .save()
+// Middleware only runs for .create() and .save() but not update()
 tourSchema.pre('save', function (next) {
   this.slug = slugify(this.name, { lower: true });
   next();
@@ -1074,3 +1076,36 @@ Logging `this.pipeline()` returns the aggregate that was executed (like below) a
   { $sort: { avgPrice: 1 } },
 ];
 ```
+
+### Data Validation
+
+They are specified in the model in the schema. Examples are `minLength` & `maxLength` for strings, `min` & `max` for nums and dates, `enum` for a range of accepted values eg
+
+```js
+difficulty: {
+  type: String,
+  required: [true, 'A tour needs a difficulty'],
+  enum: {
+    values: ['easy', 'medium', 'difficult'],
+    message: 'Difficulty can only be easy, medium or difficult!',
+  },
+},
+```
+
+### Custom Validators
+
+To note is the `this` only points to current doc on NEW DOC creation and not the same in updating.
+
+```js
+priceDiscount: {
+      type: Number,
+      validate: {
+        validator: function (val) {
+          return this.price > val;
+        },
+        message: 'Discount value ({VALUE}) must be below regular price!',
+      },
+    }
+```
+
+A third party library like`validator.js` could be used for most of these.

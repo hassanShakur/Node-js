@@ -28,6 +28,10 @@ const tourSchema = mongoose.Schema(
     difficulty: {
       type: String,
       required: [true, 'A tour needs a difficulty'],
+      enum: {
+        values: ['easy', 'medium', 'difficult'],
+        message: 'Difficulty can only be easy, medium or difficult!',
+      },
     },
     maxGroupSize: {
       type: Number,
@@ -51,8 +55,16 @@ const tourSchema = mongoose.Schema(
       default: Date.now(),
       select: false,
     },
+    priceDiscount: {
+      type: Number,
+      validate: {
+        validator: function (val) {
+          return this.price > val;
+        },
+        message: 'Discount value ({VALUE}) must be below regular price!',
+      },
+    },
     slug: String,
-    priceDiscount: Number,
     images: [String],
     startDates: [Date],
     secretTour: {
