@@ -53,6 +53,7 @@
     - [Virtual Properties](#virtual-properties)
     - [Mongoose Middlewares (pre \& post hooks)](#mongoose-middlewares-pre--post-hooks)
       - [Document Middleware](#document-middleware)
+      - [Query Middleware](#query-middleware)
 
 ## Modules
 
@@ -1000,18 +1001,43 @@ They can be used to run a fuctionality between 2 events eg before saving a doc a
 
 #### Document Middleware
 
-Can act on currently processed middleware. The `pre` has access to `this` which points to the current document being worked on. They all have `next()` same as any other middleware.
+Can act on currently processed middleware. They include `save`, `delete`, `remove` and such doc manipulators. The `pre` has access to `this` which points to the current document being worked on. They all have `next()` same as any other middleware.
 
 ```js
 // Middleware executed between .create() and .save()
 tourSchema.pre('save', function (next) {
-  // console.log(this);
   this.slug = slugify(this.name, { lower: true });
   next();
 });
 
 tourSchema.post('save', function (doc, next) {
   console.log(doc);
+  next();
+});
+```
+
+#### Query Middleware
+
+Acts between the request for a query and the time the query is presented as results. Includes `find`, `findOne`, and such. Here the `this` points to a query object and therefore chaining with other queries is posible. A simple pre middleware one for `find` would be like:
+
+```js
+tourSchema.pre('find', function (next) {
+  this.find({ secretTour: { $ne: true } });
+  next();
+});
+```
+
+Using regular expressions to track all queries with word `find` would be:
+
+```js
+tourSchema.pre(/^find/, function (next) {
+  this.find({ secretTour: { $ne: true } });
+  this.start = Date.now();
+  next();
+});
+
+tourSchema.post(/^find/, function (docs, next) {
+  console.log(`Query took ${Date.now() - this.start} milliseconds.`);
   next();
 });
 ```
