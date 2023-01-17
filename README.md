@@ -54,6 +54,7 @@
     - [Mongoose Middlewares (pre \& post hooks)](#mongoose-middlewares-pre--post-hooks)
       - [Document Middleware](#document-middleware)
       - [Query Middleware](#query-middleware)
+      - [Aggregation Middleware](#aggregation-middleware)
 
 ## Modules
 
@@ -1040,4 +1041,36 @@ tourSchema.post(/^find/, function (docs, next) {
   console.log(`Query took ${Date.now() - this.start} milliseconds.`);
   next();
 });
+```
+
+#### Aggregation Middleware
+
+Run between agregate actions and pipelines. `this` refers to any aggregate action. Sample:
+
+```js
+tourSchema.pre('aggregate', function (next) {
+  this.pipeline().unshift({ $match: { secretTour: { $ne: true } } });
+  console.log(this.pipeline());
+  next();
+});
+```
+
+Logging `this.pipeline()` returns the aggregate that was executed (like below) and thus other properties can be added using the `unshift` to add to start or `shift`.
+
+```js
+[
+  { $match: { ratingsAverage: [Object] } },
+  {
+    $group: {
+      _id: [Object],
+      numTours: [Object],
+      numRatings: [Object],
+      avgRating: [Object],
+      avgPrice: [Object],
+      minPrice: [Object],
+      maxPrice: [Object],
+    },
+  },
+  { $sort: { avgPrice: 1 } },
+];
 ```
