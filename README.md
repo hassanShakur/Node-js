@@ -57,6 +57,7 @@
       - [Aggregation Middleware](#aggregation-middleware)
     - [Data Validation](#data-validation)
     - [Custom Validators](#custom-validators)
+    - [Handling unhandled Routes](#handling-unhandled-routes)
 
 ## Modules
 
@@ -1109,3 +1110,17 @@ priceDiscount: {
 ```
 
 A third party library like`validator.js` could be used for most of these.
+
+### Handling unhandled Routes
+
+The `app.all()` route is used to handle all requests and `*` for all routes.
+
+```js
+app.all('*', (req, res, next) => {
+  res.status(404).json({
+    status: 'fail',
+    message: `The url ${req.originalUrl} couldnt be found on server.`,
+  });
+  next();
+});
+```
