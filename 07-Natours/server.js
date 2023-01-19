@@ -3,6 +3,12 @@ const dotenv = require('dotenv');
 // eslint-disable-next-line import/no-extraneous-dependencies
 const mongoose = require('mongoose');
 
+process.on('uncaughtException', (err) => {
+  console.log(err.name, err.message);
+  console.log('Uncaught Exception, shutting down...');
+  process.exit(1);
+});
+
 dotenv.config({ path: './config.env' });
 
 const app = require('./app');
@@ -47,3 +53,5 @@ process.on('unhandledRejection', (err) => {
     process.exit(1);
   });
 });
+
+console.log(x);

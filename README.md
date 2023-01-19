@@ -59,6 +59,7 @@
     - [Custom Validators](#custom-validators)
     - [Handling unhandled Routes](#handling-unhandled-routes)
     - [Unhandled Promise Rejections](#unhandled-promise-rejections)
+    - [Uncaught Exceptions](#uncaught-exceptions)
 
 ## Modules
 
@@ -1137,5 +1138,17 @@ process.on('unhandledRejection', (err) => {
   server.close(() => {
     process.exit(1);
   });
+});
+```
+
+### Uncaught Exceptions
+
+Should be put in server and above most code to listen to all. They include undefined vars and such.
+
+```js
+process.on('uncaughtException', (err) => {
+  console.log(err.name, err.message);
+  console.log('Uncaught Exception, shutting down...');
+  process.exit(1);
 });
 ```
