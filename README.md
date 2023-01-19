@@ -58,6 +58,7 @@
     - [Data Validation](#data-validation)
     - [Custom Validators](#custom-validators)
     - [Handling unhandled Routes](#handling-unhandled-routes)
+    - [Unhandled Promise Rejections](#unhandled-promise-rejections)
 
 ## Modules
 
@@ -1122,5 +1123,19 @@ app.all('*', (req, res, next) => {
     message: `The url ${req.originalUrl} couldnt be found on server.`,
   });
   next();
+});
+```
+
+### Unhandled Promise Rejections
+
+They can be captured globally using the listener `process.on`.
+
+```js
+process.on('unhandledRejection', (err) => {
+  console.log(err.name, err.message);
+  console.log('Unandled Rejection, shutting down...');
+  server.close(() => {
+    process.exit(1);
+  });
 });
 ```
