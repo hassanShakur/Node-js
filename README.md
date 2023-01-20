@@ -60,6 +60,8 @@
     - [Handling unhandled Routes](#handling-unhandled-routes)
     - [Unhandled Promise Rejections](#unhandled-promise-rejections)
     - [Uncaught Exceptions](#uncaught-exceptions)
+  - [Authentication, Authorization \& Security](#authentication-authorization--security)
+    - [Password Encryption](#password-encryption)
 
 ## Modules
 
@@ -1150,5 +1152,21 @@ process.on('uncaughtException', (err) => {
   console.log(err.name, err.message);
   console.log('Uncaught Exception, shutting down...');
   process.exit(1);
+});
+```
+
+## Authentication, Authorization & Security
+
+### Password Encryption
+
+Made use of `bcryptjs`. Salt value is 12 but default is 10. The higher the more cpu intensive. Implemented using a middleware before record save. Only re-encrypted if it has changed and `confirmPassword` is not retained in the database.
+
+```js
+userSchema.pre('save', async function (next) {
+  if (!this.isModified('password')) return next();
+
+  this.password = await bcrypt.hash(this.password, 12);
+
+  this.confirmPassword = undefined;
 });
 ```
