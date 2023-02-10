@@ -58,6 +58,8 @@
     - [Data Validation](#data-validation)
     - [Custom Validators](#custom-validators)
     - [Handling unhandled Routes](#handling-unhandled-routes)
+    - [Merging Error Creation Using Classes](#merging-error-creation-using-classes)
+    - [Catching All `try... catch` Errors in a Go](#catching-all-try-catch-errors-in-a-go)
     - [Unhandled Promise Rejections](#unhandled-promise-rejections)
     - [Uncaught Exceptions](#uncaught-exceptions)
   - [Authentication, Authorization \& Security](#authentication-authorization--security)
@@ -1127,6 +1129,61 @@ app.all('*', (req, res, next) => {
   });
   next();
 });
+```
+
+### Merging Error Creation Using Classes
+
+```js
+class AppError extends Error {
+  constructor(message, statusCode) {
+    super(message);
+
+    this.statusCode = statusCode;
+    this.status = `${statusCode}`.startsWith('4') ? 'fail' : 'error';
+    this.isOperationalError = true;
+
+    Error.captureStackTrace(this, this.constructor);
+  }
+}
+
+module.exports = AppError;
+```
+
+With this, whenever a new error is to be created, the following is passed to the `next` middleware function:
+
+```js
+next(
+  new AppError(
+    `The url ${req.originalUrl} couldnt be found on server!!!`,
+    404
+  )
+);
+```
+
+### Catching All `try... catch` Errors in a Go
+
+To achieve this, all async funcs/middlewares with `try catch` block are called using a high order function that takes this async func as a parameter and calls it, then add a `.catch(next)` statement on it so that any unandled promises are caught and passed to the `next()`.
+
+The longer syntax for calling the `catch` is:
+
+```js
+fn(req, res, next).catch((err) => next(err));
+```
+
+The high order function:
+
+```js
+module.exports = (fn) => {
+  return (req, res, next) => {
+    fn(req, res, next).catch(next);
+  };
+};
+```
+
+Back at the error generators:
+
+```js
+exports.createTour = catchAsync(async(...) => {...}
 ```
 
 ### Unhandled Promise Rejections
