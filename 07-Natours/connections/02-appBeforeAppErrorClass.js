@@ -30,12 +30,17 @@ app.use('/api/v1/users', userRouter);
 
 // Unhandled routes
 app.all('*', (req, res, next) => {
-  next(
-    new AppError(
-      `The url ${req.originalUrl} couldnt be found on server!!!`,
-      404
-    )
+  // res.status(404).json({
+  //   status: 'fail',
+  //   message: `The url ${req.originalUrl} couldnt be found on server.`,
+  // });
+  const err = new Error(
+    `The url ${req.originalUrl} couldnt be found on server!`
   );
+  err.status = 'fail';
+  err.statusCode = 404;
+  // Any parameter passed in a middleware next() is considered and error will be passed to error handling
+  next(err);
 });
 
 app.use((err, req, res, next) => {
