@@ -1,8 +1,8 @@
-/* eslint-disable node/no-extraneous-require */
 const fs = require('fs');
 const dotenv = require('dotenv');
-// eslint-disable-next-line import/no-extraneous-dependencies
+
 const mongoose = require('mongoose');
+
 const Tour = require(`${__dirname}/../../models/tourModel`);
 
 dotenv.config({ path: `${__dirname}/../../config.env` });

@@ -2,6 +2,7 @@ const express = require('express');
 const { signup } = require('../controllers/authController');
 
 const userControllers = require('../controllers/userControllers');
+
 const { getAllUsers, createUser, getUser, updateUser, deleteUser } =
   userControllers;
 

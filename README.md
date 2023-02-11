@@ -62,10 +62,10 @@
     - [Catching All `try... catch` Errors in a Go](#catching-all-try-catch-errors-in-a-go)
     - [Unhandled Promise Rejections](#unhandled-promise-rejections)
     - [Uncaught Exceptions](#uncaught-exceptions)
+    - [Advanced Error Handling](#advanced-error-handling)
   - [Authentication, Authorization \& Security](#authentication-authorization--security)
     - [Password Encryption](#password-encryption)
-    - [Advanced Error Handling](#advanced-error-handling)
-      - [Production Vs Development Errors](#production-vs-development-errors)
+    - [Token Genenration With JsonWebToken](#token-genenration-with-jsonwebtoken)
 
 ## Modules
 
@@ -1190,7 +1190,7 @@ exports.createTour = catchAsync(async(...) => {...}
 
 ### Unhandled Promise Rejections
 
-They can be captured globally using the listener `process.on`.
+They can be captured globally using the listener `process.on`. The `1` in `exit` implies an unhandled exeption.
 
 ```js
 process.on('unhandledRejection', (err) => {
@@ -1214,25 +1214,7 @@ process.on('uncaughtException', (err) => {
 });
 ```
 
-## Authentication, Authorization & Security
-
-### Password Encryption
-
-Made use of `bcryptjs`. Salt value is 12 but default is 10. The higher the more cpu intensive. Implemented using a middleware before record save. Only re-encrypted if it has changed and `confirmPassword` is not retained in the database.
-
-```js
-userSchema.pre('save', async function (next) {
-  if (!this.isModified('password')) return next();
-
-  this.password = await bcrypt.hash(this.password, 12);
-
-  this.confirmPassword = undefined;
-});
-```
-
 ### Advanced Error Handling
-
-#### Production Vs Development Errors
 
 Sending different errors in prod and development could be implemented in the `errorcontroller`. This would be as:
 
@@ -1272,4 +1254,48 @@ const sendErrorProd = (err, res) => {
     });
   }
 };
+```
+
+## Authentication, Authorization & Security
+
+### Password Encryption
+
+Made use of `bcryptjs`. Salt value is 12 but default is 10. The higher the more cpu intensive. Implemented using a middleware before record save. Only re-encrypted if it has changed and `confirmPassword` is not retained in the database.
+
+```js
+userSchema.pre('save', async function (next) {
+  if (!this.isModified('password')) return next();
+
+  this.password = await bcrypt.hash(this.password, 12);
+
+  this.confirmPassword = undefined;
+});
+```
+
+### Token Genenration With JsonWebToken
+
+The `jwt.sign` takes in the `identifier` to use to create the token, the secret key you define to be used that should be atleast 32 chars long for higher sec, and optional options as an object.
+
+```js
+exports.signup = catchAsync(async (req, res, next) => {
+  const newUser = await User.create({
+    // User creation
+  });
+
+  const token = jwt.sign(
+    { id: newUser._id },
+    process.env.JWT_SECRET_KEY,
+    {
+      expiresIn: process.env.JWT_EXPIRES_IN,
+    }
+  );
+
+  res.status(201).json({
+    status: 'success',
+    token,
+    data: {
+      user: newUser,
+    },
+  });
+});
 ```

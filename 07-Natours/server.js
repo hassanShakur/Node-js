@@ -35,7 +35,7 @@ mongoose
   .connect(DB, {
     // useNewUrlParser: true,
   })
-  .then((con) => {
+  .then(() => {
     // console.log(con.connection.name);
     console.log('DB connection successful...');
   });
@@ -53,3 +53,5 @@ process.on('unhandledRejection', (err) => {
     process.exit(1);
   });
 });
+
+// console.log(process.env);

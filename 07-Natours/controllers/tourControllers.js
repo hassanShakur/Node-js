@@ -1,7 +1,7 @@
-const Tour = require('./../models/tourModel');
-const APIFeatures = require('./../utils/apiFeatures');
-const catchAsync = require('./../utils/catchAsync');
-const AppError = require('./../utils/appError');
+const Tour = require('../models/tourModel');
+const APIFeatures = require('../utils/apiFeatures');
+const catchAsync = require('../utils/catchAsync');
+const AppError = require('../utils/appError');
 
 exports.bestAndCheap = (req, res, next) => {
   req.query.limit = '5';
