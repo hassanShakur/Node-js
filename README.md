@@ -66,6 +66,7 @@
   - [Authentication, Authorization \& Security](#authentication-authorization--security)
     - [Password Encryption](#password-encryption)
     - [Token Genenration With JsonWebToken](#token-genenration-with-jsonwebtoken)
+    - [Loging in Logic](#loging-in-logic)
 
 ## Modules
 
@@ -1299,3 +1300,55 @@ exports.signup = catchAsync(async (req, res, next) => {
   });
 });
 ```
+
+### Loging in Logic
+
+An `instance` method is available on alldocs of a certail collection. They are created using `schemaName.methods.instanceMethodName`. It is implemented in the model where the schema is also defined. This is used to compare the passwords.
+
+```js
+userSchema.methods.correctPassword = async (
+  enteredPass,
+  userPass
+) => {
+  // Could have used this.password but password is set as not selected and so this wont work and the pass has to be passed in as a parameter.
+  return await bcrypt.compare(enteredPass, userPass);
+};
+```
+
+Then back to the `authController`...
+
+```js
+exports.login = catchAsync(async (req, res, next) => {
+  const { email, password } = req.body;
+
+  // If details are provided
+  if (!email || !password) {
+    return next(
+      new AppError('Please provide email and password', 404)
+    );
+  }
+
+  //? If user exists and password is correct
+  const user = await User.findOne({ email }).select('+password');
+  console.log(user);
+
+  // const correct = await user.correctPassword(password, user.password);
+
+  if (
+    !user ||
+    !(await user.correctPassword(password, user.password))
+  ) {
+    return next(new AppError('Incorrect username or password', 401));
+  }
+
+  // Everything OK
+  const token = signToken(user._id);
+
+  res.status(200).json({
+    status: 'success',
+    token,
+  });
+});
+```
+
+401 status is for `unauthorized`.

@@ -20,6 +20,7 @@ const userSchema = new mongoose.Schema({
     type: String,
     minlength: 6,
     required: [true, 'Please enter your password.'],
+    select: false,
   },
 
   confirmPassword: {
@@ -44,6 +45,11 @@ userSchema.pre('save', async function (next) {
 
   this.confirmPassword = undefined;
 });
+
+userSchema.methods.correctPassword = async (enteredPass, userPass) => {
+  // Could have used this.password but password is set as not selected and so this wont work and the pass has to be passed in as a parameter.
+  return await bcrypt.compare(enteredPass, userPass);
+};
 
 const User = mongoose.model('User', userSchema);
 
