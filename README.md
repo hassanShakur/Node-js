@@ -64,6 +64,8 @@
     - [Uncaught Exceptions](#uncaught-exceptions)
   - [Authentication, Authorization \& Security](#authentication-authorization--security)
     - [Password Encryption](#password-encryption)
+    - [Advanced Error Handling](#advanced-error-handling)
+      - [Production Vs Development Errors](#production-vs-development-errors)
 
 ## Modules
 
@@ -1226,4 +1228,48 @@ userSchema.pre('save', async function (next) {
 
   this.confirmPassword = undefined;
 });
+```
+
+### Advanced Error Handling
+
+#### Production Vs Development Errors
+
+Sending different errors in prod and development could be implemented in the `errorcontroller`. This would be as:
+
+```js
+if (process.env.NODE_ENV === 'development') {
+  sendErrorDev(err, res);
+} else if (process.env.NODE_ENV === 'development') {
+  sendErrorProd(err, res);
+}
+```
+
+The funcs just serve different levels of info
+
+```js
+const sendErrorDev = (err, res) => {
+  res.status(err.statusCode).json({
+    status: err.status,
+    message: err.message,
+    error: err,
+    stack: err.stack,
+  });
+};
+
+const sendErrorProd = (err, res) => {
+  // Operational error
+  if (err.isOperational) {
+    res.status(err.statusCode).json({
+      status: err.status,
+      message: err.message,
+    });
+
+    // Programming error
+  } else {
+    res.status(500).json({
+      status: 'error',
+      message: 'Something went wrong!!!',
+    });
+  }
+};
 ```
