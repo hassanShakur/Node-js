@@ -148,6 +148,7 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
     user.passwordResetToken = undefined;
     await user.save({ validateBeforeSave: false });
 
+    console.log(err);
     return next(
       new AppError('Something went wrong! Please try again later.', 500)
     );
