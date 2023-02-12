@@ -74,6 +74,8 @@
       - [Find the User with the Id \& Ensure Password Hasn't Been Changed](#find-the-user-with-the-id--ensure-password-hasnt-been-changed)
     - [Restricting Request Actions Based on User Roles](#restricting-request-actions-based-on-user-roles)
     - [Handling Forgot Password](#handling-forgot-password)
+      - [1. Configure the email in a separate file](#1-configure-the-email-in-a-separate-file)
+      - [2. Back to the AuthController](#2-back-to-the-authcontroller)
 
 ## Modules
 
@@ -1595,4 +1597,76 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
 
 4. Send the token to the described email.
 
-Gonna be using `nodemailer`.
+Gonna be using `nodemailer` and `mailtrap`. It's quite a process.
+
+#### 1. Configure the email in a separate file
+
+```js
+const nodemailer = require('nodemailer');
+
+const sendEmail = async (options) => {
+  // Create transporter
+  const transporter = nodemailer.createTransport({
+    host: process.env.EMAIL_HOST,
+    port: process.env.EMAIL_PORT,
+    auth: {
+      user: process.env.EMAIL_USERNAME,
+      pass: process.env.EMAIL_PASSWORD,
+    },
+    authMethod: process.env.EMAIL_AUTH_METHOD,
+  });
+
+  // Define email options
+  const mailOptions = {
+    from: 'Hassan Shakur <hassanshakur.dev@gmail.com',
+    to: options.email,
+    subject: options.subject,
+    text: options.message,
+  };
+
+  // Send the email
+  await transporter.sendMail(mailOptions);
+};
+
+module.exports = sendEmail;
+```
+
+#### 2. Back to the AuthController
+
+1. Create the url to be sent for user to send a patch request to.
+2. Create the message to send
+3. Send the email with options.
+
+```js
+const sendEmail = require('../utils/email');
+
+// Later ...
+// Send url to user's email
+const resetURL = `${req.protocol}://${req.get(
+  'host'
+)}/api/v1/users/resetPassword/${resetToken}`;
+
+const message = `We've received a password reset request. Please submit a PATCH request to ${resetURL} with the new password and confirm password.\nIf you didn't forget your password just ignore this email.`;
+
+try {
+  await sendEmail({
+    email: user.email,
+    subject: `Password reset token, (valid for 10 mins)`,
+    message,
+  });
+
+  res.status(200).json({
+    status: 'success',
+    message: 'Check your email for the token!',
+  });
+} catch (err) {
+  user.passwordResetExpires = undefined;
+  user.passwordResetToken = undefined;
+  await user.save({ validateBeforeSave: false });
+
+  console.log(err);
+  return next(
+    new AppError('Something went wrong! Please try again later.', 500)
+  );
+}
+```
