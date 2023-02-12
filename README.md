@@ -67,6 +67,11 @@
     - [Password Encryption](#password-encryption)
     - [Token Genenration With JsonWebToken](#token-genenration-with-jsonwebtoken)
     - [Loging in Logic](#loging-in-logic)
+    - [Reasource Protection Based on Authentication](#reasource-protection-based-on-authentication)
+      - [Adding The Middleware](#adding-the-middleware)
+      - [Check Header for Authorization Token](#check-header-for-authorization-token)
+      - [Verify the Token](#verify-the-token)
+      - [Find the User with the Id \& Ensure Password Hasn't Been Changed](#find-the-user-with-the-id--ensure-password-hasnt-been-changed)
 
 ## Modules
 
@@ -1305,12 +1310,14 @@ exports.signup = catchAsync(async (req, res, next) => {
 
 An `instance` method is available on alldocs of a certail collection. They are created using `schemaName.methods.instanceMethodName`. It is implemented in the model where the schema is also defined. This is used to compare the passwords.
 
+In this method, `this.password` could have been used but password is set as not selected and so this wont work and the password now has to be passed in as a parameter.
+
 ```js
 userSchema.methods.correctPassword = async (
   enteredPass,
   userPass
 ) => {
-  // Could have used this.password but password is set as not selected and so this wont work and the pass has to be passed in as a parameter.
+  // Could have used this.
   return await bcrypt.compare(enteredPass, userPass);
 };
 ```
@@ -1318,6 +1325,12 @@ userSchema.methods.correctPassword = async (
 Then back to the `authController`...
 
 ```js
+const signToken = (id) => {
+  return jwt.sign({ id }, process.env.JWT_SECRET_KEY, {
+    expiresIn: process.env.JWT_EXPIRES_IN,
+  });
+};
+
 exports.login = catchAsync(async (req, res, next) => {
   const { email, password } = req.body;
 
@@ -1352,3 +1365,131 @@ exports.login = catchAsync(async (req, res, next) => {
 ```
 
 401 status is for `unauthorized`.
+
+### Reasource Protection Based on Authentication
+
+#### Adding The Middleware
+
+In the `router` for the resource to protect, add a middleware before the middleware handler so it is only run after authentication is approved.
+
+```js
+router.route('/').get(protect, getAllTours).post(createTour);
+```
+
+#### Check Header for Authorization Token
+
+Then in the `authController`, the logic for the `protect` middleware is applied. First the auth token is read from the `request header` named `authorization` and its value starts with `Bearer` followed by the token.
+
+```js
+const auth = req.headers.authorization;
+let token;
+if (auth && auth.startsWith('Bearer')) {
+  // authorization: Bearer sometokenstring
+  token = auth.split(' ')[1];
+}
+
+if (!token)
+  return next(new AppError('Please log in to continue', 401));
+```
+
+#### Verify the Token
+
+If the token exists, it is verified by the func `jwt.verify()` which takes in the token and the secret key. The third param is a callback to handle its response but the function can be `promisified` and just await the response. The `util` is an inbuilt node module.
+
+```js
+const { promisify } = require('util');
+
+// Later
+
+const decoded = await promisify(jwt.verify)(
+  token,
+  process.env.JWT_SECRET_KEY
+);
+```
+
+The promise resolves to an object with the `id` used to create the token, its `issue time` as `iat` and `expiration time` as `exp`.
+
+```js
+{ id: '63e8adc3ed5a9deeac7ea6a9', iat: 1676193417, exp: 1676452617 }
+```
+
+#### Find the User with the Id & Ensure Password Hasn't Been Changed
+
+You can then check to see if the user still exists by finding them using the id. An extra verification may be to ensure that from the time the token was issued to the time it's being used, the user password has not been changed. This can be accomplished by another user defined method in the schema like `userModel`.
+
+```js
+userSchema.methods.changedPasswordAfter = function (JWTTimeStamp) {
+  if (this.passwordChangedAt) {
+    const timeChanged = parseFloat(
+      this.passwordChangedAt.getTime() / 1000
+    );
+
+    console.log(JWTTimeStamp, timeChanged);
+    return timeChanged > JWTTimeStamp;
+  }
+  return false;
+};
+```
+
+The func returns `true` if the password was changed recently. This func is then called in the auth controller.
+
+```js
+if (currUser.changedPasswordAfter(decoded.iat)) {
+  return next(
+    new AppError(
+      'User password changed recently. Please login again.'
+    )
+  );
+}
+```
+
+If all goes well, the user can access the route. The general structure would look as below.
+
+```js
+exports.protect = catchAsync(async (req, res, next) => {
+  // Check if token is included in header
+  const auth = req.headers.authorization;
+  let token;
+  if (auth && auth.startsWith('Bearer')) {
+    // authorization: Bearer sometokenstring
+    token = auth.split(' ')[1];
+  }
+
+  if (!token)
+    return next(new AppError('Please log in to continue', 401));
+  // console.log(token);
+
+  // Authenticity of token - Verification
+
+  const decoded = await promisify(jwt.verify)(
+    token,
+    process.env.JWT_SECRET_KEY
+  );
+  // console.log(decoded);
+
+  // If user still exists
+  const currUser = await User.findById(decoded.id);
+
+  if (!currUser) {
+    return next(
+      new AppError(
+        'The owner for this token no longer exists!!!',
+        401
+      )
+    );
+  }
+
+  // If user changed password after token was issued
+  if (currUser.changedPasswordAfter(decoded.iat)) {
+    return next(
+      new AppError(
+        'User password changed recently. Please login again.'
+      )
+    );
+  }
+
+  // Grant access
+  req.user = currUser;
+  next();
+});
+```
