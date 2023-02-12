@@ -73,6 +73,7 @@
       - [Verify the Token](#verify-the-token)
       - [Find the User with the Id \& Ensure Password Hasn't Been Changed](#find-the-user-with-the-id--ensure-password-hasnt-been-changed)
     - [Restricting Request Actions Based on User Roles](#restricting-request-actions-based-on-user-roles)
+    - [Handling Forgot Password](#handling-forgot-password)
 
 ## Modules
 
@@ -1536,3 +1537,62 @@ exports.restrictTo = (...roles) => {
 ```
 
 Important to note that this step depends on the previous middleware else the role of the user could not be read.
+
+### Handling Forgot Password
+
+Create a route for `forgotPassword` where an email for the account to recover in sent.
+
+```js
+router.post('/forgotPassword', forgotPassword);
+```
+
+Then handle the middleware in the authController with steps as:
+
+1. Check if User Exists
+2. Generate random token to be used as a reset token.
+
+This token is sent to the email and a copy of its encrypted version is kept in the database on a field `passwordResetToken`, and an expiration time `passwordResetExpires`. Thus a method in the model will be useful.
+
+```js
+userSchema.methods.createPasswordResetToken = function () {
+  const resetToken = crypto.randomBytes(32).toString('hex');
+
+  this.passwordResetToken = crypto
+    .createHash('sha256')
+    .update(resetToken)
+    .digest('hex');
+
+  console.log({ resetToken }, this.passwordResetToken);
+
+  this.passwordResetExpires = Date.now() + 10 * 60 * 1000; // 10 mins
+
+  return resetToken;
+};
+```
+
+The method creates a 32 bit long token, of which its encrypted version is stored in the db. It makes use of an inbuilt encryption module:
+
+```js
+const crypto = require('crypto');
+```
+
+3. Save the document with the current edited fields. the `validateBeforeSave` temporarily clears the rules set that a request must have certain fields.
+
+```js
+exports.forgotPassword = catchAsync(async (req, res, next) => {
+  // Check if user exists using email
+  const user = await User.findOne({ email: req.body.email });
+
+  if (!user) {
+    return next(new AppError('No user found with that email!!', 404));
+  }
+
+  // Generate random reset token
+  const resetToken = user.createPasswordResetToken();
+  await user.save({ validateBeforeSave: false });
+});
+```
+
+4. Send the token to the described email.
+
+Gonna be using `nodemailer`.
