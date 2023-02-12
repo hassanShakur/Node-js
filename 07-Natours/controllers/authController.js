@@ -13,11 +13,12 @@ const signToken = (id) => {
 
 exports.signup = catchAsync(async (req, res, next) => {
   const newUser = await User.create({
-    name: req.body.name,
-    email: req.body.email,
-    password: req.body.password,
-    confirmPassword: req.body.confirmPassword,
-    passwordChangedAt: req.body.passwordChangedAt,
+    ...req.body,
+    // name: req.body.name,
+    // email: req.body.email,
+    // password: req.body.password,
+    // confirmPassword: req.body.confirmPassword,
+    // passwordChangedAt: req.body.passwordChangedAt,
   });
 
   const token = signToken(newUser._id);
@@ -98,3 +99,15 @@ exports.protect = catchAsync(async (req, res, next) => {
   req.user = currUser;
   next();
 });
+
+exports.restrictTo = (...roles) => {
+  // Roles can be an array of permitted users/roles
+  return (req, res, next) => {
+    if (!roles.includes(req.user.role)) {
+      return next(
+        new AppError('You are not aythorized to perform this operation!!!', 403)
+      );
+    }
+    next();
+  };
+};

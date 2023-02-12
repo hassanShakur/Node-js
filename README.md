@@ -72,6 +72,7 @@
       - [Check Header for Authorization Token](#check-header-for-authorization-token)
       - [Verify the Token](#verify-the-token)
       - [Find the User with the Id \& Ensure Password Hasn't Been Changed](#find-the-user-with-the-id--ensure-password-hasnt-been-changed)
+    - [Restricting Request Actions Based on User Roles](#restricting-request-actions-based-on-user-roles)
 
 ## Modules
 
@@ -1493,3 +1494,45 @@ exports.protect = catchAsync(async (req, res, next) => {
   next();
 });
 ```
+
+### Restricting Request Actions Based on User Roles
+
+First add user roles in the schema for the user model.
+
+```js
+role: {
+    type: String,
+    enum: {
+      values: ['user', 'admin', 'guide'],
+      message: 'Roles can either be user, admin or guide!!',
+    },
+    default: 'user',
+  },
+```
+
+Then implements the middleware in the route after the `protect` so it can access the `user` object set in the protection stage on the `req.user` property.
+
+```js
+router.delete(protect, restrictTo('admin'), deleteTour);
+```
+
+Now creating the middleware function `restrictTo()` on the `authController` to implement the details.
+
+```js
+exports.restrictTo = (...roles) => {
+  // Roles can be an array of permitted users/roles passed into this function
+  return (req, res, next) => {
+    if (!roles.includes(req.user.role)) {
+      return next(
+        new AppError(
+          'You are not aythorized to perform this operation!!!',
+          403
+        )
+      );
+    }
+    next();
+  };
+};
+```
+
+Important to note that this step depends on the previous middleware else the role of the user could not be read.

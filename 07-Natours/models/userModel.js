@@ -16,6 +16,15 @@ const userSchema = new mongoose.Schema({
     lowercase: true,
   },
 
+  role: {
+    type: String,
+    enum: {
+      values: ['user', 'admin', 'guide'],
+      message: 'Roles can either be user, admin or guide!!',
+    },
+    default: 'user',
+  },
+
   password: {
     type: String,
     minlength: 6,
@@ -54,7 +63,7 @@ userSchema.methods.changedPasswordAfter = function (JWTTimeStamp) {
   if (this.passwordChangedAt) {
     const timeChanged = parseFloat(this.passwordChangedAt.getTime() / 1000);
 
-    console.log(JWTTimeStamp, timeChanged);
+    // console.log(JWTTimeStamp, timeChanged);
     return timeChanged > JWTTimeStamp;
   }
   return false;
