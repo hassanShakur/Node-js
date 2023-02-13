@@ -33,7 +33,7 @@ const userSchema = new mongoose.Schema({
     select: false,
   },
 
-  confirmPassword: {
+  passwordConfirm: {
     type: String,
     required: [true, 'Please confirm your password.'],
     validate: {
@@ -55,7 +55,15 @@ userSchema.pre('save', async function (next) {
 
   this.password = await bcrypt.hash(this.password, 12);
 
-  this.confirmPassword = undefined;
+  this.passwordConfirm = undefined;
+});
+
+userSchema.pre('save', function (next) {
+  if (!this.isModified('password') || this.isNew) return next();
+
+  // The minus ensures that the token is always created after the password changed time
+  this.passwordChangedAt = Date.now() - 1000;
+  next();
 });
 
 userSchema.methods.correctPassword = async (enteredPass, userPass) => {

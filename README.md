@@ -76,6 +76,7 @@
     - [Handling Forgot Password](#handling-forgot-password)
       - [1. Configure the email in a separate file](#1-configure-the-email-in-a-separate-file)
       - [2. Back to the AuthController](#2-back-to-the-authcontroller)
+    - [Handling Reset Password](#handling-reset-password)
 
 ## Modules
 
@@ -1270,7 +1271,7 @@ const sendErrorProd = (err, res) => {
 
 ### Password Encryption
 
-Made use of `bcryptjs`. Salt value is 12 but default is 10. The higher the more cpu intensive. Implemented using a middleware before record save. Only re-encrypted if it has changed and `confirmPassword` is not retained in the database.
+Made use of `bcryptjs`. Salt value is 12 but default is 10. The higher the more cpu intensive. Implemented using a middleware before record save. Only re-encrypted if it has changed and `passwordConfirm` is not retained in the database.
 
 ```js
 userSchema.pre('save', async function (next) {
@@ -1278,7 +1279,7 @@ userSchema.pre('save', async function (next) {
 
   this.password = await bcrypt.hash(this.password, 12);
 
-  this.confirmPassword = undefined;
+  this.passwordConfirm = undefined;
 });
 ```
 
@@ -1669,4 +1670,69 @@ try {
     new AppError('Something went wrong! Please try again later.', 500)
   );
 }
+```
+
+### Handling Reset Password
+
+Email is sent containing a url to make a `patch` request for reseting the password. The request has the client token appended as a param and it's captured in the router as:
+
+```js
+router.patch('/resetPassword/:token', resetPassword);
+```
+
+The `resetPassword` function in the `auth` has 4 steps:
+
+1. Get the user using by using the hashed token received as it was saved before.
+2. Check if token is valid or has expired.
+3. Update `passwordChangedAt` prop from the `model`
+
+```js
+userSchema.pre('save', function (next) {
+  if (!this.isModified('password') || this.isNew) return next();
+
+  this.passwordChangedAt = Date.now() - 1000;
+  next();
+});
+```
+
+The minus ensures that the token is always created after the password changed time so the user need not login again after this. removing it will require a login with the new password.
+
+4. Send token and login the user. The procedure would be as:
+
+```js
+exports.resetPassword = catchAsync(async (req, res, next) => {
+  // Get user based on token
+  const hashedToken = crypto
+    .createHash('sha256')
+    .update(req.params.token)
+    .digest('hex');
+
+  const user = await User.findOne({
+    passwordResetToken: hashedToken,
+    passwordResetExpires: { $gt: Date.now() },
+  });
+
+  // Token hasnt expired and there is a user, set new password
+  if (!user) {
+    return next(
+      new AppError('Token is invalid or has expired!', 400)
+    );
+  }
+
+  user.password = req.body.password;
+  user.passwordConfirm = req.body.passwordConfirm;
+  user.passwordResetExpires = undefined;
+  user.passwordResetToken = undefined;
+  await user.save();
+
+  // Update passwordChangedAt property
+
+  // Log user in and send jwt token
+  const token = signToken(user._id);
+
+  res.status(200).json({
+    status: 'success',
+    token,
+  });
+});
 ```
