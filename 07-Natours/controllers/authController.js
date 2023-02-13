@@ -12,6 +12,15 @@ const signToken = (id) => {
   });
 };
 
+const sendTokenResponse = (userId, statusCode, res) => {
+  const token = signToken(userId);
+
+  res.status(statusCode).json({
+    status: 'success',
+    token,
+  });
+};
+
 exports.signup = catchAsync(async (req, res, next) => {
   const newUser = await User.create({
     ...req.body,
@@ -52,12 +61,7 @@ exports.login = catchAsync(async (req, res, next) => {
   }
 
   // Everything OK
-  const token = signToken(user._id);
-
-  res.status(200).json({
-    status: 'success',
-    token,
-  });
+  sendTokenResponse(user._id, 200, res);
 });
 
 exports.protect = catchAsync(async (req, res, next) => {
@@ -181,10 +185,31 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
   // Update passwordChangedAt property
 
   // Log user in and send jwt token
-  const token = signToken(user._id);
+  sendTokenResponse(user._id, 200, res);
+});
 
-  res.status(200).json({
-    status: 'success',
-    token,
-  });
+exports.updatePassword = catchAsync(async (req, res, next) => {
+  // Find user based on passed id and user from protect middleware
+  //? Should Never Use FindByIdAndUpdate as it doesnt run Validatiors
+  //? Validators only run on SAVE and NEW doc
+  const user = await User.findById(req.user.id).select('+password');
+  // console.log(user);
+
+  // Check if POSTed pass is correct
+  const correct = await user.correctPassword(
+    req.body.passwordCurrent,
+    user.password
+  );
+
+  if (!correct) {
+    return next(new AppError('Wrong password!', 401));
+  }
+
+  // Save new password
+  user.password = req.body.password;
+  user.passwordConfirm = req.body.passwordConfirm;
+  await user.save();
+
+  // Send token
+  sendTokenResponse(user._id, 200, res);
 });

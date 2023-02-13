@@ -77,6 +77,7 @@
       - [1. Configure the email in a separate file](#1-configure-the-email-in-a-separate-file)
       - [2. Back to the AuthController](#2-back-to-the-authcontroller)
     - [Handling Reset Password](#handling-reset-password)
+    - [Password Update](#password-update)
 
 ## Modules
 
@@ -1734,5 +1735,53 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
     status: 'success',
     token,
   });
+});
+```
+
+### Password Update
+
+Done when user is already logged in so the request will be protected.
+
+```js
+router.patch('/updateMyPassword', protect, updatePassword);
+```
+
+User enters `passqordCurrent`, `newPassword` and `confirmPassword` in a `patch` request. The curr pass in compared with db curr pass using the earlier method `correctPassword`. If true, the new password is saved and token sent.
+
+```js
+const sendTokenResponse = (userId, statusCode, res) => {
+  const token = signToken(userId);
+
+  res.status(statusCode).json({
+    status: 'success',
+    token,
+  });
+};
+
+// Later
+exports.updatePassword = catchAsync(async (req, res, next) => {
+  // Find user based on passed id and user from protect middleware
+  //? Should Never Use FindByIdAndUpdate as it doesnt run Validatiors
+  //? Validators only run on SAVE and NEW doc
+  const user = await User.findById(req.user.id).select('+password');
+  // console.log(user);
+
+  // Check if POSTed pass is correct
+  const correct = await user.correctPassword(
+    req.body.passwordCurrent,
+    user.password
+  );
+
+  if (!correct) {
+    return next(new AppError('Wrong password!', 401));
+  }
+
+  // Save new password
+  user.password = req.body.password;
+  user.passwordConfirm = req.body.passwordConfirm;
+  await user.save();
+
+  // Send token
+  sendTokenResponse(user._id, 200, res);
 });
 ```
