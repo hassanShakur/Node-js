@@ -80,6 +80,8 @@
     - [Password Update](#password-update)
     - [Updating User Details](#updating-user-details)
     - [Delete User](#delete-user)
+  - [Other Security Concerns](#other-security-concerns)
+    - [Cookies In Sending JWT](#cookies-in-sending-jwt)
 
 ## Modules
 
@@ -1856,4 +1858,37 @@ exports.deleteMe = catchAsync(async (req, res, next) => {
     data: null,
   });
 });
+```
+
+## Other Security Concerns
+
+### Cookies In Sending JWT
+
+JWTs can be send through browser cookies to prevent XSS as would happen when sending it via the response as a json string. It is included in the `res` as a cookie. `Secure` ensures the cookie is only sent in `https`, and so on.
+
+```js
+const sendTokenResponse = (userId, statusCode, res) => {
+  const token = signToken(userId);
+
+  const cookieOptions = {
+    expires: new Date(
+      Date.now() +
+        process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000
+    ),
+    // Only send via https
+    // secure: false,
+    // Ensures the browser or any other person cannot manipulate this cookie
+    httpOnly: true,
+  };
+
+  if (process.env.NODE_ENV === 'production')
+    cookieOptions.secure = true;
+
+  res.cookie('jwt', token, cookieOptions);
+
+  res.status(statusCode).json({
+    status: 'success',
+    token,
+  });
+};
 ```
