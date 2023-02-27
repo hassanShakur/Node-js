@@ -1,6 +1,7 @@
 // eslint-disable-next-line prettier/prettier
 const express = require('express');
 const rateLimit = require('express-rate-limit');
+const helmet = require('helmet');
 // eslint-disable-next-line import/no-extraneous-dependencies
 const morgan = require('morgan');
 
@@ -13,13 +14,10 @@ const userRouter = require('./routers/userRouters');
 const tourRouter = require('./routers/tourRouters');
 
 // Global Middlewares
+// Set securuty headers
+app.use(helmet());
 
-if (process.env.NODE_ENV === 'development') {
-  app.use(morgan('dev'));
-}
-app.use(express.json());
-app.use(express.static(`${__dirname}/public`));
-
+// Limiting IP requests
 const limiter = rateLimit({
   max: 100,
   windowMs: 60 * 60 * 1000,
@@ -28,8 +26,20 @@ const limiter = rateLimit({
 
 app.use('/api', limiter);
 
+// Dev logging
+if (process.env.NODE_ENV === 'development') {
+  app.use(morgan('dev'));
+}
+
+// Body parser - Reading data from body to req.body, can limit max size of body received
+// app.use(express.json());
+app.use(express.json({ limit: '10kb' }));
+
+// Serve static files
+app.use(express.static(`${__dirname}/public`));
+
+// Test Middleware
 app.use((req, res, next) => {
-  // console.log('Middleware called');
   req.timeRequested = new Date().toISOString();
   // console.log(req.headers);
   next();

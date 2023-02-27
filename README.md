@@ -83,6 +83,7 @@
   - [Other Security Concerns](#other-security-concerns)
     - [Cookies In Sending JWT](#cookies-in-sending-jwt)
     - [Rate Limiting](#rate-limiting)
+    - [Setting Security HTTP Headers](#setting-security-http-headers)
 
 ## Modules
 
@@ -1912,4 +1913,15 @@ const limiter = rateLimit({
 app.use('/api', limiter);
 ```
 
-The `max` is max number of requests within the period `windowMs` in milliseconds. The `message` is sent if the limit is reached.
+The `max` is max number of requests within the period `windowMs` in milliseconds. The `message` is sent if the limit is reached. The remaining requests and other limit details are in the header of the response.
+
+### Setting Security HTTP Headers
+
+`helmet` package is used at the topmost of middlewares to ensure all headers have it.
+
+```js
+const helmet = require('helmet');
+// Later
+
+app.use(helmet());
+```
