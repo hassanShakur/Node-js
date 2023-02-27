@@ -44,6 +44,11 @@ const userSchema = new mongoose.Schema({
       message: 'The passwords are not the same!',
     },
   },
+  isActive: {
+    type: Boolean,
+    default: true,
+    select: false,
+  },
   passwordChangedAt: Date,
   passwordResetToken: String,
   passwordResetExpires: Date,
@@ -63,6 +68,14 @@ userSchema.pre('save', function (next) {
 
   // The minus ensures that the token is always created after the password changed time
   this.passwordChangedAt = Date.now() - 1000;
+  next();
+});
+
+userSchema.pre(/^find/, function (next) {
+  // This points to current query
+  this.find({ isActive: { $ne: false } });
+  //Or
+  // this.find({ isActive: true });
   next();
 });
 

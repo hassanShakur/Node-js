@@ -79,6 +79,7 @@
     - [Handling Reset Password](#handling-reset-password)
     - [Password Update](#password-update)
     - [Updating User Details](#updating-user-details)
+    - [Delete User](#delete-user)
 
 ## Modules
 
@@ -1790,6 +1791,10 @@ exports.updatePassword = catchAsync(async (req, res, next) => {
 ### Updating User Details
 
 ```js
+router.patch('/updateme', protect, userControllers.updateMe);
+```
+
+```js
 exports.updateMe = catchAsync(async (req, res, next) => {
   // Send error if user is tryng to change password
   if (req.body.password || req.body.passwordconfirm) {
@@ -1820,6 +1825,35 @@ exports.updateMe = catchAsync(async (req, res, next) => {
     data: {
       user: updatedUser,
     },
+  });
+});
+```
+
+### Delete User
+
+The user is set to inactive as a property in the user model. A `query middleware` is then used to ensure all queries do not select the inactive users.
+
+```js
+router.delete('/deleteMe', protect, userControllers.deleteMe);
+```
+
+```js
+userSchema.pre(/^find/, function (next) {
+  // This points to current query
+  this.find({ isActive: { $ne: false } });
+  //Or
+  this.find({ isActive: true });
+  next();
+});
+```
+
+```js
+exports.deleteMe = catchAsync(async (req, res, next) => {
+  await User.findByIdAndUpdate(req.user.id, { isActive: false });
+
+  res.status(204).json({
+    status: 'Success',
+    data: null,
   });
 });
 ```

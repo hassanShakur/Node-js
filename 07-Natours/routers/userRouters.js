@@ -22,6 +22,8 @@ router.patch('/updateMyPassword', protect, updatePassword);
 
 router.patch('/updateme', protect, userControllers.updateMe);
 
+router.delete('/deleteMe', protect, userControllers.deleteMe);
+
 router.post('/forgotPassword', forgotPassword);
 router.patch('/resetPassword/:token', resetPassword);
 
