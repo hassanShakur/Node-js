@@ -85,6 +85,7 @@
     - [Rate Limiting](#rate-limiting)
     - [Setting Security HTTP Headers](#setting-security-http-headers)
     - [Simple Email Hack](#simple-email-hack)
+    - [Prevent Parameter Polution](#prevent-parameter-polution)
 
 ## Modules
 
@@ -1948,4 +1949,17 @@ app.use(mongoSanitize());
 
 // Data sanitization against XSS
 app.use(xss());
+```
+
+### Prevent Parameter Polution
+
+Eg specifying the sort parameter twice on the same url with different vslues. `hpp` package is used, `HTTP Parameter Pollution`. You can whitelist the fields that multiple queries are allowed.
+
+```js
+// Parameter pollution
+app.use(
+  hpp({
+    whitelist: ['duration'],
+  })
+);
 ```
