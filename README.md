@@ -82,6 +82,7 @@
     - [Delete User](#delete-user)
   - [Other Security Concerns](#other-security-concerns)
     - [Cookies In Sending JWT](#cookies-in-sending-jwt)
+    - [Rate Limiting](#rate-limiting)
 
 ## Modules
 
@@ -1892,3 +1893,23 @@ const sendTokenResponse = (userId, statusCode, res) => {
   });
 };
 ```
+
+### Rate Limiting
+
+Helps prevent `DOS` and `Brute Force Attacks` by limiting the amount of requests from an IP within a period of time. `express-rate-limit` package can be used. Its applied as a global middleware to the app and the highest global route.
+
+```js
+const rateLimit = require('express-rate-limit');
+
+// Then later in same file
+const limiter = rateLimit({
+  max: 100,
+  windowMs: 60 * 60 * 1000,
+  message:
+    'Too many requests from this IP. Please try again in 1 hour!',
+});
+
+app.use('/api', limiter);
+```
+
+The `max` is max number of requests within the period `windowMs` in milliseconds. The `message` is sent if the limit is reached.
