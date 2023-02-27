@@ -84,6 +84,7 @@
     - [Cookies In Sending JWT](#cookies-in-sending-jwt)
     - [Rate Limiting](#rate-limiting)
     - [Setting Security HTTP Headers](#setting-security-http-headers)
+    - [Simple Email Hack](#simple-email-hack)
 
 ## Modules
 
@@ -1924,4 +1925,27 @@ const helmet = require('helmet');
 // Later
 
 app.use(helmet());
+```
+
+### Simple Email Hack
+
+Logging in with a valid password and email as:
+
+```js
+{
+    "email":{"$gt": ""},
+    "password":"correct"
+}
+```
+
+The email injection will always return true for all emails and as long as one of the email passwords is used, access is granted.
+Sanitization can be applied using `xss-clean` & `express-mongo-sanitize` packages.
+The sanitize looks at request `body`, `queries` and `params` and filters all `$` and `dots`. Xss cleans malicious html/js code, by converting html symbols.
+
+```js
+// Protection from NoSQL and query injections
+app.use(mongoSanitize());
+
+// Data sanitization against XSS
+app.use(xss());
 ```
