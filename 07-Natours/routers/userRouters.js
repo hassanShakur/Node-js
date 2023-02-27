@@ -20,6 +20,8 @@ router.post('/login', login);
 
 router.patch('/updateMyPassword', protect, updatePassword);
 
+router.patch('/updateme', protect, userControllers.updateMe);
+
 router.post('/forgotPassword', forgotPassword);
 router.patch('/resetPassword/:token', resetPassword);
 

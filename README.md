@@ -78,6 +78,7 @@
       - [2. Back to the AuthController](#2-back-to-the-authcontroller)
     - [Handling Reset Password](#handling-reset-password)
     - [Password Update](#password-update)
+    - [Updating User Details](#updating-user-details)
 
 ## Modules
 
@@ -1783,5 +1784,42 @@ exports.updatePassword = catchAsync(async (req, res, next) => {
 
   // Send token
   sendTokenResponse(user._id, 200, res);
+});
+```
+
+### Updating User Details
+
+```js
+exports.updateMe = catchAsync(async (req, res, next) => {
+  // Send error if user is tryng to change password
+  if (req.body.password || req.body.passwordconfirm) {
+    return next(
+      new AppError(
+        'Please use /updateMyPassword for password update!',
+        400
+      )
+    );
+  }
+
+  // select only fields user is allowed to change
+  const filteredBody = filterBody(req.body, 'name', 'email');
+  console.log(filterBody);
+
+  // Use direct update as password will be required if you try to save
+  const updatedUser = await User.findByIdAndUpdate(
+    req.user.id,
+    filteredBody,
+    {
+      new: true,
+      runValidators: true,
+    }
+  );
+
+  res.status(200).json({
+    status: 'success',
+    data: {
+      user: updatedUser,
+    },
+  });
 });
 ```
