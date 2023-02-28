@@ -86,6 +86,9 @@
     - [Setting Security HTTP Headers](#setting-security-http-headers)
     - [Simple Email Hack](#simple-email-hack)
     - [Prevent Parameter Polution](#prevent-parameter-polution)
+  - [Data Modelling](#data-modelling)
+    - [Tweak on Embedding](#tweak-on-embedding)
+    - [Referencing](#referencing)
 
 ## Modules
 
@@ -1962,4 +1965,80 @@ app.use(
     whitelist: ['duration'],
   })
 );
+```
+
+## Data Modelling
+
+Including data in data can be done by `reference` or `embedding`. All depends on accesibity of the data and their relationship.
+To embed data eg keeping tour guides ids in the tour model can be implemented such that on tour creation, guides' ids are passed to a property `guides: Array` of the tour and in the backend, the guides' details is fetched from the user model.
+
+### Tweak on Embedding
+
+```js
+// Before in the same doc for schema
+...
+guides: Array,
+
+// Later
+tourSchema.pre('save', async function (next) {
+  const guidesPromises = this.guides.map(
+    async (id) => await User.findById(id)
+  );
+  this.guides = await Promise.all(guidesPromises);
+  next();
+});
+```
+
+The `guidesPromises` is an array of promises returned from the search and therefore all have to be awaited for resolve before including them in the tour data. Embedding in this case is not best as user details may later change.
+
+### Referencing
+
+Creating a reference to a tour using the tour id can be done as:
+
+```js
+ guides: [
+      {
+        type: mongoose.Schema.ObjectId,
+        ref: 'User',
+      },
+    ],
+```
+
+This is included in the `tours schema` model. Whenever a query is made, this reference will be responsible for `populating` the results of the query with the relevant user details from the user model.
+To populate, a small addition is added to the `getTour` query handler:
+
+```js
+exports.getTour = catchAsync(async (req, res, next) => {
+  const tour = await Tour.findById(req.params.id).populate('guides');
+
+  if (!tour) {
+    return next(new AppError('No tour found with that ID', 404));
+  }
+
+  res.status(200).json({
+    status: 'success',
+    data: { tour },
+  });
+});
+```
+
+To exclude some fields about the user, extra options are added to the `populate` function.
+
+```js
+const tour = await Tour.findById(req.params.id).populate({
+  path: 'guides',
+  select: '-__v -passwordChangedAt',
+});
+```
+
+This will therefore only work for the routes where the populate is specified. A query middleware can be used to populate all queries hitting the tours route.
+
+```js
+tourSchema.pre(/^find/, function (next) {
+  this.populate({
+    path: 'guides',
+    select: '-__v -passwordChangedAt',
+  });
+  next();
+});
 ```
