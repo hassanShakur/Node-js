@@ -92,6 +92,8 @@
     - [Virtual Populate](#virtual-populate)
     - [Nested Routes](#nested-routes)
       - [Merge Params](#merge-params)
+      - [Reviews for a Tour](#reviews-for-a-tour)
+    - [Factory Functions](#factory-functions)
 
 ## Modules
 
@@ -2138,4 +2140,48 @@ Then the review will remain the same but its router will be configured to accept
 
 ```js
 const router = express.Router({ mergeParams: true });
+```
+
+#### Reviews for a Tour
+
+If an id is specified in the url and its a `GET` request for reviews, then the id can be picked by the `getAllTours` controller and use it to find only the reviews for the particular tour. This is again ensured by the mergeParams prop.
+
+```js
+exports.getAllReviews = catchAsync(async (req, res, next) => {
+  let filter = {};
+  if (req.params.tourId) filter = { tour: req.params.tourId };
+  const reviews = await Review.find(filter);
+
+ ...
+});
+```
+
+### Factory Functions
+
+Are funcs that return functions. As certain operations are similar, eg the `delete` for reviews, users and tours, the procedure can be automated by a factory function that receives a `Model` to operate on eg `User` and then finds the doc and handle responses and operations. A new factory file can be used in the controllers to handle this:
+
+```js
+// Example for deleting docs
+exports.deleteOne = (Model) =>
+  catchAsync(async (req, res, next) => {
+    const doc = await Model.findByIdAndDelete(req.params.id);
+
+    if (!doc) {
+      return next(new AppError('Document not found', 404));
+    }
+
+    res.status(204).json({
+      status: 'success',
+      data: null,
+    });
+  });
+```
+
+Then for example in the tourController, to delete, only this is required:
+
+```js
+const factory = require('./handlerFactory');
+
+// Later
+exports.deleteTour = factory.deleteOne(Tour);
 ```
