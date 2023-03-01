@@ -90,6 +90,7 @@
     - [Tweak on Embedding](#tweak-on-embedding)
     - [Referencing](#referencing)
     - [Virtual Populate](#virtual-populate)
+    - [Nested Routes](#nested-routes)
 
 ## Modules
 
@@ -2098,4 +2099,28 @@ The the route/query to populate in toursController:
 
 ```js
 const tour = await Tour.findById(req.params.id)?.populate('reviews');
+```
+
+### Nested Routes
+
+The syntax `:/id` is still used in the router:
+
+```js
+router
+  .route('/:tourId/reviews')
+  .post(protect, restrictTo('user'), createReview);
+```
+
+Then in the route controller, `createReview`, if the user id or tour id is not specified in the body, tour is fetched from the `params.id` and user from `user.id` set at the `protect` middleware.
+
+```js
+exports.createReview = catchAsync(async (req, res, next) => {
+  // For nested routes
+  if (!req.body.tour) req.body.tour = req.params.tourId;
+  if (!req.body.user) req.body.user = req.user.id;
+
+  const newReview = await Review.create(req.body);
+
+  ...
+});
 ```
