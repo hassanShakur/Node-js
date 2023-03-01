@@ -89,6 +89,7 @@
   - [Data Modelling](#data-modelling)
     - [Tweak on Embedding](#tweak-on-embedding)
     - [Referencing](#referencing)
+    - [Virtual Populate](#virtual-populate)
 
 ## Modules
 
@@ -2052,4 +2053,49 @@ tourSchema.pre(/^find/, function (next) {
   });
   next();
 });
+```
+
+### Virtual Populate
+
+As in parent referencing the parent doesnt keep track of the children, getting the chicldren info when querying the parent can be accomplished using `virtual populate`, just like a virtual property. Keeping a list of all chicldren in the parent would only make this list longer and redundant.
+So in the tour model, to return reviews for the tour:
+
+```js
+tourSchema.virtual('reviews', {
+  ref: 'Review',
+  foreignField: 'tour',
+  localField: '_id',
+});
+```
+
+The `ref` is the source of the properties - children, `foreignField` the like `foreign-key` and `localField` the `primary-key`. This therefore matches the id passed in the `review` at the `tour` property to the id of the current queried tour.
+
+```js
+
+const reviewSchema = mongoose.Schema(
+  {
+    review: {
+      type: String,
+      required: [true, 'A review cannot be empty!'],
+    },
+    ...
+    tour: {
+      type: mongoose.Schema.ObjectId,
+      ref: 'Tour',
+      required: [true, 'A review must belong to a tour!'],
+    },
+    user: {
+      type: mongoose.Schema.ObjectId,
+      ref: 'User',
+      required: [true, 'A review must be written by a user!'],
+    },
+  },
+ ...
+);
+```
+
+The the route/query to populate in toursController:
+
+```js
+const tour = await Tour.findById(req.params.id)?.populate('reviews');
 ```
