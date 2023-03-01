@@ -16,16 +16,29 @@ exports.deleteOne = (Model) =>
     });
   });
 
-// exports.deleteTour = catchAsync(async (req, res, next) => {
-//   const tour = await Tour.findByIdAndDelete(req.params.id);
-//   console.log(tour);
+exports.updateOne = (Model) =>
+  catchAsync(async (req, res, next) => {
+    const doc = await Model.findByIdAndUpdate(req.params.id, req.body, {
+      new: true,
+      runValidators: true,
+    });
 
-//   if (!tour) {
-//     return next(new AppError('Tour not found', 404));
-//   }
+    res.status(200).json({
+      status: 'success',
+      data: {
+        doc,
+      },
+    });
+  });
 
-//   res.status(204).json({
-//     status: 'success',
-//     data: null,
-//   });
-// });
+exports.createOne = (Model) =>
+  catchAsync(async (req, res, next) => {
+    const doc = await Model.create(req.body);
+
+    res.status(201).json({
+      status: 'success',
+      data: {
+        data: doc,
+      },
+    });
+  });
