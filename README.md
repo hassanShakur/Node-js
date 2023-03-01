@@ -91,6 +91,7 @@
     - [Referencing](#referencing)
     - [Virtual Populate](#virtual-populate)
     - [Nested Routes](#nested-routes)
+      - [Merge Params](#merge-params)
 
 ## Modules
 
@@ -2123,4 +2124,18 @@ exports.createReview = catchAsync(async (req, res, next) => {
 
   ...
 });
+```
+
+#### Merge Params
+
+The above code works but its quite a repetition, plus a route related to reviews is kept in the `tourRouter`. To fix this, such a route as it starts with `tour`, eg `/tour/someId/reviews`, is first received in the tour router but then fowarded to the reviews router as all user, tour routes were redirected by the `app.js`. Therefore in `tourRouter`:
+
+```js
+router.use('/:tourId/reviews', reviewRouter);
+```
+
+Then the review will remain the same but its router will be configured to accept params from redirected routes:
+
+```js
+const router = express.Router({ mergeParams: true });
 ```
