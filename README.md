@@ -1025,6 +1025,17 @@ tourSchema.virtual('durationWeeks').get(function () {
 });
 ```
 
+This code:
+
+```js
+
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true },
+
+```
+
+... makes sure that these calculated properties (virtual) that arent stored in the DB always show up whenever a query is made.
+
 ### Mongoose Middlewares (pre & post hooks)
 
 They can be used to run a fuctionality between 2 events eg before saving a doc and after. They are defined on the schema & are 4 types:

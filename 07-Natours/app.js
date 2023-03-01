@@ -15,6 +15,7 @@ const app = express();
 
 const userRouter = require('./routers/userRouters');
 const tourRouter = require('./routers/tourRouters');
+const reviewRouter = require('./routers/reviewRouters');
 
 // Global Middlewares
 // Set securuty headers
@@ -71,6 +72,7 @@ app.use((req, res, next) => {
 // Router mounting
 app.use('/api/v1/tours', tourRouter);
 app.use('/api/v1/users', userRouter);
+app.use('/api/v1/reviews', reviewRouter);
 
 // Unhandled routes
 app.all('*', (req, res, next) => {
