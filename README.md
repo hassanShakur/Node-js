@@ -95,6 +95,8 @@
       - [Reviews for a Tour](#reviews-for-a-tour)
     - [Factory Functions](#factory-functions)
     - [Get Me Details](#get-me-details)
+    - [Improving Reading Perfoemances Using Index](#improving-reading-perfoemances-using-index)
+    - [Calculating Ratings Average](#calculating-ratings-average)
 
 ## Modules
 
@@ -2227,3 +2229,99 @@ exports.getOne = (Model, populateOptions) =>
     });
   });
 ```
+
+### Improving Reading Perfoemances Using Index
+
+For queries that are anticipated to be queried most, it'll be hectic if all documents have to be examined every time a similar query is issued. Indices help with this as after a query, the designed index will sort the docs in the given order such that as few docs as possible are examined whenever the same query is issued. All this can be viewed by adding a `.explain()` method to a query:
+
+```js
+//Form
+const doc = await features.query;
+
+//to
+const doc = await features.query.explain();
+```
+
+This will be part of results: compare `totalDocsExamined` and `nReturned`.
+
+```js
+"executionStats": {
+   "executionSuccess": true,
+   "nReturned": 2,
+   "executionTimeMillis": 7,
+   "totalKeysExamined": 0,
+   "totalDocsExamined": 9,
+   "executionStages": {
+   "allPlansExecution": []
+},
+```
+
+To add an index, go to the schema file:
+
+```js
+tourSchema.index({ price: 1, ratingsAverage: -1 });
+```
+
+This creates 2 indices, (1 compound index), where prices are sorted in asc. Indices use some space but with large scale data reading,it would be worth it.
+
+### Calculating Ratings Average
+
+An aggregate function is used to match all ids that match the current query id. This is a `static` method that can therefore be called by the model itself since aggregate funcs can only be used on a model not instances. The `this` in a static method always points to the model.
+The second part checks if the `stats` array is empty, ie no docs matching it were found, ie, no reviews exist, and sets the `ratingsQuantity` & `ratingsAverage` as per the newly calculated results.
+
+```js
+reviewSchema.statics.calcAvgRatings = async function (tourId) {
+  const stats = await this.aggregate([
+    {
+      $match: { tour: tourId },
+    },
+    {
+      $group: {
+        _id: '$tour',
+        numRatings: { $sum: 1 },
+        avgRatings: { $avg: '$rating' },
+      },
+    },
+  ]);
+  console.log(stats);
+
+  if (stats.length > 0) {
+    await Tour.findByIdAndUpdate(tourId, {
+      ratingsAverage: stats[0].avgRatings,
+      ratingsQuantity: stats[0].numRatings,
+    });
+  } else {
+    await Tour.findByIdAndUpdate(tourId, {
+      ratingsAverage: 4.5,
+      ratingsQuantity: 0,
+    });
+  }
+};
+```
+
+The static func is then called in a `post` save middleware to ensure current changes are reflected. Yhe `post` doesn't get access to the `next` method. As `this` in such a middleware points to an instancce of the model, the current query, it's `constructor`, the model is used to call the previously created method.
+
+```js
+reviewSchema.post('save', function () {
+  // Review.calcAvgRatings(this.tour) => Cant work as Review is not yet defined. Moving it down also wont work as the `post` wont be there
+  this.constructor.calcAvgRatings(this.tour);
+});
+```
+
+The calculations will ocly work for new ratings but to ensure `updates` and `deletes` are also reflected, something more is added.
+
+```js
+//findByIdAndUpdate
+//findByIdAndDelete
+reviewSchema.pre(/^findOneAnd/, async function (next) {
+  this.r = await this.findOne();
+  console.log(this.r);
+  next();
+});
+
+reviewSchema.post(/^findOneAnd/, async function () {
+  await this.r.constructor.calcAvgRatings(this.r);
+});
+```
+
+The `pre` middleware is just there to include the current tour that has been accessed by the review in the `this` so that it can be called at `post` after the query is done and doc is saved. This is posiible as whenever a query is made, eg `await this.findOne()`, it always returns the current document which has the `tour id` in it on a prop `tour`. Thus this current tour is includec in this `this` and passed on to the next middleware in `post` where it is accessed: `this.r`, called constructor on to access the model: `this.r.constructor`, then call the calc method using the same tour id `this.r`
