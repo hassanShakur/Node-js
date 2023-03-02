@@ -26,12 +26,12 @@ router.route('/tour-stats').get(tourControllers.getTourStats, getAllTours);
 
 router.route('/best-and-cheap').get(tourControllers.bestAndCheap, getAllTours);
 
-router.route('/').get(protect, getAllTours).post(createTour);
+router.route('/').get(getAllTours).post(createTour);
 
 router
   .route('/:id')
   .get(getTour)
-  .patch(updateTour)
+  .patch(protect, restrictTo('admin', 'tour-guide'), updateTour)
   .delete(protect, restrictTo('admin'), deleteTour);
 
 module.exports = router;
