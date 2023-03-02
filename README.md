@@ -96,6 +96,7 @@
     - [Factory Functions](#factory-functions)
     - [Get Me Details](#get-me-details)
     - [Improving Reading Perfoemances Using Index](#improving-reading-perfoemances-using-index)
+      - [Prevent Multiple Reviews](#prevent-multiple-reviews)
     - [Calculating Ratings Average](#calculating-ratings-average)
 
 ## Modules
@@ -2263,6 +2264,14 @@ tourSchema.index({ price: 1, ratingsAverage: -1 });
 ```
 
 This creates 2 indices, (1 compound index), where prices are sorted in asc. Indices use some space but with large scale data reading,it would be worth it.
+
+#### Prevent Multiple Reviews
+
+A single user can only review a tour once. An index can be used to ensure the `tour` `user` combination is always unique. The second param in the `index` method is options and this can be set here. The nums `1` in the tour and user arent that important.
+
+```js
+reviewSchema.index({ tour: 1, user: 1 }, { unique: true });
+```
 
 ### Calculating Ratings Average
 
