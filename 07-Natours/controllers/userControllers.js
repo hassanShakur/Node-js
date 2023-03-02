@@ -11,33 +11,22 @@ const filterBody = (obj, ...requiredFields) => {
   return filteredObj;
 };
 
-exports.getAllUsers = catchAsync(async (req, res) => {
-  const user = await User.find();
-
-  res.status(200).json({
-    status: 'success',
-    results: user.length,
-    data: { user },
-  });
-});
-
-exports.getUser = (req, res) => {
-  res.status(500).json({
-    status: 'error',
-    message: 'Route not yet defined!!',
-  });
+exports.getMe = (req, res, next) => {
+  req.params.id = req.user.id;
+  next();
 };
 
+exports.getAllUsers = factory.getAll(User);
+exports.getUser = factory.getOne(User);
 exports.updateUser = factory.updateOne(User);
+exports.deleteUser = factory.deleteOne(User);
 
 exports.createUser = (req, res) => {
   res.status(500).json({
     status: 'error',
-    message: 'Route not yet defined!!',
+    message: 'Route not defined! Please use Signup to create account!',
   });
 };
-
-exports.deleteUser = factory.deleteOne(User);
 
 exports.updateMe = catchAsync(async (req, res, next) => {
   // Send error if user is tryng to change password

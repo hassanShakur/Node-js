@@ -94,6 +94,7 @@
       - [Merge Params](#merge-params)
       - [Reviews for a Tour](#reviews-for-a-tour)
     - [Factory Functions](#factory-functions)
+    - [Get Me Details](#get-me-details)
 
 ## Modules
 
@@ -2184,4 +2185,45 @@ const factory = require('./handlerFactory');
 
 // Later
 exports.deleteTour = factory.deleteOne(Tour);
+```
+
+### Get Me Details
+
+Allow user to access their details:
+
+```js
+router.get('/me', protect, userControllers.getMe, getUser);
+```
+
+The `getMe` middleware in user controller sets current user id to the params as it is required by the `factory getOne` to get details.
+
+```js
+exports.getMe = (req, res, next) => {
+  req.params.id = req.user.id;
+  next();
+};
+```
+
+```js
+exports.getUser = factory.getOne(User);
+```
+
+```js
+exports.getOne = (Model, populateOptions) =>
+  catchAsync(async (req, res, next) => {
+    let query = Model.findById(req.params.id);
+    if (populateOptions) query = query.populate(populateOptions);
+    const doc = await query;
+
+    if (!doc) {
+      return next(
+        new AppError('No document found with that ID', 404)
+      );
+    }
+
+    res.status(200).json({
+      status: 'success',
+      data: { doc },
+    });
+  });
 ```

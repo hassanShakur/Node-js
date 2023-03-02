@@ -21,6 +21,7 @@ router.post('/login', login);
 router.patch('/updateMyPassword', protect, updatePassword);
 
 router.patch('/updateme', protect, userControllers.updateMe);
+router.get('/me', protect, userControllers.getMe, getUser);
 
 router.delete('/deleteMe', protect, userControllers.deleteMe);
 
