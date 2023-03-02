@@ -20,7 +20,7 @@ const userSchema = new mongoose.Schema({
   role: {
     type: String,
     enum: {
-      values: ['user', 'admin', 'guide'],
+      values: ['user', 'admin', 'guide', 'lead-guide'],
       message: 'Roles can either be user, admin or guide!!',
     },
     default: 'user',
@@ -55,29 +55,29 @@ const userSchema = new mongoose.Schema({
   photo: String,
 });
 
-userSchema.pre('save', async function (next) {
-  if (!this.isModified('password')) return next();
+// userSchema.pre('save', async function (next) {
+//   if (!this.isModified('password')) return next();
 
-  this.password = await bcrypt.hash(this.password, 12);
+//   this.password = await bcrypt.hash(this.password, 12);
 
-  this.passwordConfirm = undefined;
-});
+//   this.passwordConfirm = undefined;
+// });
 
-userSchema.pre('save', function (next) {
-  if (!this.isModified('password') || this.isNew) return next();
+// userSchema.pre('save', function (next) {
+//   if (!this.isModified('password') || this.isNew) return next();
 
-  // The minus ensures that the token is always created after the password changed time
-  this.passwordChangedAt = Date.now() - 1000;
-  next();
-});
+//   // The minus ensures that the token is always created after the password changed time
+//   this.passwordChangedAt = Date.now() - 1000;
+//   next();
+// });
 
-userSchema.pre(/^find/, function (next) {
-  // This points to current query
-  this.find({ isActive: { $ne: false } });
-  //Or
-  // this.find({ isActive: true });
-  next();
-});
+// userSchema.pre(/^find/, function (next) {
+//   // This points to current query
+//   this.find({ isActive: { $ne: false } });
+//   //Or
+//   // this.find({ isActive: true });
+//   next();
+// });
 
 userSchema.methods.correctPassword = async (enteredPass, userPass) => {
   return await bcrypt.compare(enteredPass, userPass);
