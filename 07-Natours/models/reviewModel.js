@@ -35,15 +35,6 @@ const reviewSchema = mongoose.Schema(
 
 reviewSchema.index({ tour: 1, user: 1 }, { unique: true });
 
-// reviewSchema.pre(/^find/, function (next) {
-//   this.populate({
-//     path: 'user',
-//     select: 'name',
-//   }).populate({
-//     path: 'tour',
-//     select: 'name',
-//   });
-
 reviewSchema.pre(/^find/, function (next) {
   this.populate({
     path: 'user',

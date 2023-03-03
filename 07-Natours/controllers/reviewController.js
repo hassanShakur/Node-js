@@ -1,6 +1,8 @@
-// const catchAsync = require('../utils/catchAsync');
+const catchAsync = require('../utils/catchAsync');
+const AppError = require('../utils/appError');
 const Review = require('./../models/reviewModel');
 const factory = require('./handlerFactory');
+const Tour = require('./../models/tourModel');
 
 exports.setTourUserIds = (req, res, next) => {
   // For nested routes

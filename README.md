@@ -98,6 +98,8 @@
     - [Improving Reading Perfoemances Using Index](#improving-reading-perfoemances-using-index)
       - [Prevent Multiple Reviews](#prevent-multiple-reviews)
     - [Calculating Ratings Average](#calculating-ratings-average)
+    - [Geospatial Queries](#geospatial-queries)
+      - [Tours Within Radius](#tours-within-radius)
 
 ## Modules
 
@@ -2334,3 +2336,53 @@ reviewSchema.post(/^findOneAnd/, async function () {
 ```
 
 The `pre` middleware is just there to include the current tour that has been accessed by the review in the `this` so that it can be called at `post` after the query is done and doc is saved. This is posiible as whenever a query is made, eg `await this.findOne()`, it always returns the current document which has the `tour id` in it on a prop `tour`. Thus this current tour is includec in this `this` and passed on to the next middleware in `post` where it is accessed: `this.r`, called constructor on to access the model: `this.r.constructor`, then call the calc method using the same tour id `this.r`
+
+### Geospatial Queries
+
+#### Tours Within Radius
+
+A router is set to receive the radius distance, starting point as latitude and longitude, and the usits for the distance: can be miles or km.
+
+```js
+router
+  .route('/tours-within/:distance/center/:latlng/unit/:unit')
+  .get(tourControllers.tourWithin);
+```
+
+The a control handler `tourWithin` is defined where it captures these params, and fetch tours that match the descriptions.
+
+```js
+exports.tourWithin = catchAsync(async (req, res, next) => {
+  const { distance, latlng, unit } = req.params;
+  const [lat, lng] = latlng.split(',');
+
+  const radiantRadius =
+    unit === 'mi' ? distance / 3963.2 : distance / 6378.1;
+
+  if (!lat || !lng) {
+    next(new AppError('Please specify your lat & lng!', 400));
+  }
+
+  const tours = await Tour.find({
+    startLocation: {
+      $geoWithin: {
+        $centerSphere: [[lng, lat], radiantRadius],
+      },
+    },
+  });
+
+  res.status(200).json({
+    status: 'success',
+    results: tours.length,
+    data: {
+      data: tours,
+    },
+  });
+});
+```
+
+For this, a `geoWithin` query is issued with an option `centerSphere` which is an array with the first an array of longitude then latitude, and the second the distance from that point in `radiants`. An index can be added to the model for such 2d locations as:
+
+```js
+tourSchema.index({ startLocation: '2dsphere' });
+```

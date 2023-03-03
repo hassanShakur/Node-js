@@ -34,4 +34,8 @@ router
   .patch(protect, restrictTo('admin', 'tour-guide'), updateTour)
   .delete(protect, restrictTo('admin'), deleteTour);
 
+router
+  .route('/tours-within/:distance/center/:latlng/unit/:unit')
+  .get(tourControllers.tourWithin);
+
 module.exports = router;
