@@ -38,4 +38,8 @@ router
   .route('/tours-within/:distance/center/:latlng/unit/:unit')
   .get(tourControllers.tourWithin);
 
+router
+  .route('/distances/center/:latlng/unit/:unit')
+  .get(tourControllers.distances);
+
 module.exports = router;

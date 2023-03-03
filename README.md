@@ -100,6 +100,7 @@
     - [Calculating Ratings Average](#calculating-ratings-average)
     - [Geospatial Queries](#geospatial-queries)
       - [Tours Within Radius](#tours-within-radius)
+      - [Distances of Tours from Points](#distances-of-tours-from-points)
 
 ## Modules
 
@@ -2386,3 +2387,57 @@ For this, a `geoWithin` query is issued with an option `centerSphere` which is a
 ```js
 tourSchema.index({ startLocation: '2dsphere' });
 ```
+
+#### Distances of Tours from Points
+
+Router:
+
+```js
+router
+  .route('/distances/center/:latlng/unit/:unit')
+  .get(tourControllers.distances);
+```
+
+Controller
+
+```js
+exports.distances = catchAsync(async (req, res, next) => {
+  const { latlng, unit } = req.params;
+  const [lat, lng] = latlng.split(',');
+
+  // Converting distance to miles or km from default meters
+  const multiplier = unit === 'mi' ? 0.000621371 : 0.001;
+
+  if (!lat || !lng) {
+    next(new AppError('Please specify your lat & lng!', 400));
+  }
+
+  const distances = await Tour.aggregate([
+    {
+      $geoNear: {
+        near: {
+          type: 'Point',
+          coordinates: [lng * 1, lat * 1],
+        },
+        distanceField: 'distance',
+        distanceMultiplier: multiplier,
+      },
+    },
+    {
+      $project: {
+        name: 1,
+        distance: 1,
+      },
+    },
+  ]);
+
+  res.status(200).json({
+    status: 'success',
+    data: {
+      data: distances,
+    },
+  });
+});
+```
+
+The `geoNear` query is the only one in aggregation concerning geospatials and should always be the first in the aggregate else it will cause an error. Its parameters `near` specifies type of reference point and its location, `distanceField` is the field to be added to the data and `distanceMultiplier` is multiplied by the `distanceField` for convertions as needed.
