@@ -101,6 +101,7 @@
     - [Geospatial Queries](#geospatial-queries)
       - [Tours Within Radius](#tours-within-radius)
       - [Distances of Tours from Points](#distances-of-tours-from-points)
+  - [Server Side Rendering With Pug](#server-side-rendering-with-pug)
 
 ## Modules
 
@@ -2441,3 +2442,32 @@ exports.distances = catchAsync(async (req, res, next) => {
 ```
 
 The `geoNear` query is the only one in aggregation concerning geospatials and should always be the first in the aggregate else it will cause an error. Its parameters `near` specifies type of reference point and its location, `distanceField` is the field to be added to the data and `distanceMultiplier` is multiplied by the `distanceField` for convertions as needed.
+
+## Server Side Rendering With Pug
+
+To instruct `express` to use `pug` as the view engine:
+
+```js
+// Server side pug config
+app.set('view engine', 'pug');
+// views of MVC location
+app.set('views', path.join(__dirname, 'views'));
+```
+
+The second part shows express the location for the `views` that are to be used as template in the rendering.
+
+Items in the `pug` files are dependent on the `statics` file location defined in the `app`. Example, using such a link in pug:
+
+```js
+link((rel = 'stylesheet'), (href = 'css/style.css'));
+```
+
+The above `href` will be searched from the defined base point for static urls ie in this case:
+
+```js
+app.use(express.static(path.join(__dirname, 'public')));
+//OR
+// app.use(express.static(`${__dirname}/public`));
+```
+
+So the path will direct to the `public` folder then try to locate the `css` folder.

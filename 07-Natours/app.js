@@ -1,5 +1,6 @@
 // eslint-disable-next-line prettier/prettier
 const express = require('express');
+const path = require('path');
 const rateLimit = require('express-rate-limit');
 const helmet = require('helmet');
 const mongoSanitize = require('express-mongo-sanitize');
@@ -17,6 +18,11 @@ const userRouter = require('./routers/userRouters');
 const tourRouter = require('./routers/tourRouters');
 const reviewRouter = require('./routers/reviewRouters');
 
+// Server side pug config
+app.set('view engine', 'pug');
+// views of MVC location
+app.set('views', path.join(__dirname, 'views'));
+
 // Global Middlewares
 // Set securuty headers
 app.use(helmet());
@@ -29,6 +35,10 @@ const limiter = rateLimit({
 });
 
 app.use('/api', limiter);
+
+// Serve static files
+app.use(express.static(path.join(__dirname, 'public')));
+// app.use(express.static(`${__dirname}/public`));
 
 // Dev logging
 if (process.env.NODE_ENV === 'development') {
@@ -59,14 +69,16 @@ app.use(
   })
 );
 
-// Serve static files
-app.use(express.static(`${__dirname}/public`));
-
 // Test Middleware
 app.use((req, res, next) => {
   req.timeRequested = new Date().toISOString();
   // console.log(req.headers);
   next();
+});
+
+// Server Side Mounting/Linking
+app.use('/', (req, res) => {
+  res.status(200).render('base');
 });
 
 // Router mounting
