@@ -102,6 +102,10 @@
       - [Tours Within Radius](#tours-within-radius)
       - [Distances of Tours from Points](#distances-of-tours-from-points)
   - [Server Side Rendering With Pug](#server-side-rendering-with-pug)
+    - [Pug Basics](#pug-basics)
+      - [Buffered Code](#buffered-code)
+      - [Unbuffered Code](#unbuffered-code)
+      - [Interpolation](#interpolation)
 
 ## Modules
 
@@ -2470,4 +2474,60 @@ app.use(express.static(path.join(__dirname, 'public')));
 // app.use(express.static(`${__dirname}/public`));
 ```
 
-So the path will direct to the `public` folder then try to locate the `css` folder.
+So the path will direct to the `public` folder then try to locate the `css` folder. The route will be implemented in the app as:
+
+```js
+app.use('/', (req, res) => {
+  res.status(200).render('base');
+});
+```
+
+... where `base` is the pug file named `base.pug` and is located in the `views` folder as described above when setting the `views` path.
+
+### Pug Basics
+
+#### Buffered Code
+
+It is code visible to the output html. Involves using data set in the router, in the pug file. it's a second parameter as options when describing the routes.
+
+```js
+app.use('/', (req, res) => {
+  res.status(200).render('base', {
+    random: 'Some random text',
+  });
+});
+```
+
+Then consumed with `tagName= value` syntax
+
+```js
+doctype html
+html
+    head
+        link(rel="stylesheet", href="css/style.css")
+        link(rel="shortcut icon", href="img/favicon.png", type="image/png")
+        title Website
+    body
+        h1 The Homepage
+        h2= random
+        // HTML comment
+        //-Pug comment => Not visible in output html
+```
+
+#### Unbuffered Code
+
+Not visible. Can be used as calculators.
+
+```js
+- const x = 10
+h4= x * 2
+```
+
+#### Interpolation
+
+Like es6 template strings
+
+```js
+// where tour is a passed data
+title Natours | #{tour}
+```

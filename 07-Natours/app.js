@@ -78,7 +78,10 @@ app.use((req, res, next) => {
 
 // Server Side Mounting/Linking
 app.use('/', (req, res) => {
-  res.status(200).render('base');
+  res.status(200).render('base', {
+    random: 'Some random text',
+    tour: 'The Forest Hiker',
+  });
 });
 
 // Router mounting
