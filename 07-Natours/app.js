@@ -17,6 +17,7 @@ const app = express();
 const userRouter = require('./routers/userRouters');
 const tourRouter = require('./routers/tourRouters');
 const reviewRouter = require('./routers/reviewRouters');
+const viewRouter = require('./routers/viewRouters');
 
 // Server side pug config
 app.set('view engine', 'pug');
@@ -76,15 +77,8 @@ app.use((req, res, next) => {
   next();
 });
 
-// Server Side Mounting/Linking
-app.use('/', (req, res) => {
-  res.status(200).render('base', {
-    random: 'Some random text',
-    tour: 'The Forest Hiker',
-  });
-});
-
 // Router mounting
+app.use('/', viewRouter);
 app.use('/api/v1/tours', tourRouter);
 app.use('/api/v1/users', userRouter);
 app.use('/api/v1/reviews', reviewRouter);
