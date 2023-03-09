@@ -90,6 +90,7 @@
     - [Tweak on Embedding](#tweak-on-embedding)
     - [Referencing](#referencing)
     - [Virtual Populate](#virtual-populate)
+    - [Sessions And Transactions](#sessions-and-transactions)
     - [Nested Routes](#nested-routes)
       - [Merge Params](#merge-params)
       - [Reviews for a Tour](#reviews-for-a-tour)
@@ -2073,7 +2074,7 @@ tourSchema.pre(/^find/, function (next) {
 
 ### Virtual Populate
 
-As in parent referencing the parent doesnt keep track of the children, getting the chicldren info when querying the parent can be accomplished using `virtual populate`, just like a virtual property. Keeping a list of all chicldren in the parent would only make this list longer and redundant.
+As in parent referencing the parent doesnt keep track of the children, getting the chicldren info when querying the parent can be accomplished using `virtual populate`, just like a virtual property. Keeping a list of all children in the parent would only make this list longer and redundant.
 So in the tour model, to return reviews for the tour:
 
 ```js
@@ -2114,6 +2115,23 @@ The the route/query to populate in toursController:
 
 ```js
 const tour = await Tour.findById(req.params.id)?.populate('reviews');
+```
+
+### Sessions And Transactions
+
+When dealing with multiple db changes that it's either all are commited or if one fails, all are reverted, `sessions` and `transactions` are needed. A session is created and diring this period, all transactions are made asynchronously and there after the session closed.
+
+```js
+try {
+  const sess = await mongooose.startSession();
+  sess.startTransaction();
+  await Model1.save({ session: sess });
+  Model2.bookmarks.push(newBookmark);
+  await Model2.save({ session: sess });
+  await sess.commitTransaction();
+} catch (err) {
+  throw err;
+}
 ```
 
 ### Nested Routes
