@@ -91,6 +91,7 @@
     - [Referencing](#referencing)
     - [Virtual Populate](#virtual-populate)
     - [Sessions And Transactions](#sessions-and-transactions)
+    - [Reading MongoDB Id as Normal Object Without \_](#reading-mongodb-id-as-normal-object-without-_)
     - [Nested Routes](#nested-routes)
       - [Merge Params](#merge-params)
       - [Reviews for a Tour](#reviews-for-a-tour)
@@ -2132,6 +2133,12 @@ try {
 } catch (err) {
   throw err;
 }
+```
+
+### Reading MongoDB Id as Normal Object Without \_
+
+```js
+fetchedUser.toObject({ getters: true });
 ```
 
 ### Nested Routes
